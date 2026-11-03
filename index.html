@@ -1,0 +1,1720 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Undertow">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#0b0b14">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Undertow</title>
+<style>
+/* css/base.css */
+/* Colour tokens, reset, page background, links. */
+:root{
+  --bg:#07050a;--bg2:#100b14;--bg3:#1a1220;--panel:#120c17;--line:#2a1f33;
+  --fg:#f2e9ff;--fg2:#9f8fb3;--fg3:#6b5f7d;--acc:#35e3ff;--acc2:#a45cff;--neon:#ff3fa4;--ok:#3ee0a0;--warn:#ffb347;
+  --mono:"Cascadia Mono",Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,Segoe UI,Roboto,sans-serif}
+a{color:var(--acc)}
+/* css/layout.css */
+/* Header bar, tab strip, the main column, the next-button footer. */
+header{display:flex;align-items:center;gap:10px;padding:12px 22px;border-bottom:1px solid var(--line);background:var(--bg2);position:sticky;top:0;z-index:5;flex-wrap:wrap}
+header h1{margin:0;font-size:20px;letter-spacing:.12em;text-transform:uppercase;color:var(--acc)}
+header h1 small{color:var(--fg3);letter-spacing:0;text-transform:none;font-weight:normal;margin-left:10px;font-size:13px}
+.spacer{flex:1}
+nav{display:flex;gap:4px;padding:8px 22px;border-bottom:1px solid var(--line);background:var(--bg2);overflow-x:auto}
+nav button{border:none;background:transparent;color:var(--fg2);padding:8px 11px;border-radius:6px;white-space:nowrap}
+nav button.on{background:var(--bg3);color:var(--fg)}
+nav button .n{font-family:var(--mono);font-size:11px;color:var(--fg3);margin-left:6px}
+nav button.done .n{color:var(--ok)}
+nav .sep{width:1px;background:var(--line);margin:4px 4px}
+main{max-width:980px;margin:0 auto;padding:24px 22px 80px}
+.foot{display:flex;justify-content:space-between;margin-top:20px;align-items:center}
+/* css/controls.css */
+/* Form controls: selects, buttons, text inputs, field labels, kbd. */
+select,button,input[type=text],input[type=date],textarea{background:var(--bg3);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:7px 10px;font:inherit}
+button{cursor:pointer}
+button:hover{border-color:var(--acc2)}
+button.primary{background:var(--acc2);border-color:var(--acc2);color:#fff}
+button.danger{border-color:#7a2a4a;color:var(--neon)}
+button.sm{padding:2px 8px;font-size:12px}
+textarea{width:100%;min-height:70px}
+kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:4px;padding:0 5px;color:var(--fg2)}
+label.f{display:block;font-size:12px;color:var(--fg3);font-family:var(--mono);margin-top:8px}
+.f+select,.f+input,.f+textarea{width:100%}
+/* css/panels.css */
+/* Cards and the question rows inside them: options, true/false rows, notes. */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin-bottom:16px}
+.card h2{margin:0 0 6px;font-size:17px}
+.card h3{margin:18px 0 6px;font-size:14px;color:var(--acc);text-transform:uppercase;letter-spacing:.08em}
+.muted{color:var(--fg2)}
+.tiny{color:var(--fg3);font-size:12px;font-family:var(--mono)}
+.q{margin-bottom:22px}
+.q .t{margin-bottom:8px}
+.q .t b{color:var(--fg3);font-family:var(--mono);font-weight:normal;margin-right:8px}
+.opt{display:block;padding:9px 12px;border:1px solid var(--line);border-radius:7px;margin:5px 0;cursor:pointer;background:var(--bg2)}
+.opt:hover{border-color:var(--acc2)}
+.opt.on{border-color:var(--acc);background:#13202a}
+.opt input{display:none}
+.opt .k{font-family:var(--mono);color:var(--fg3);margin-right:8px;font-size:12px}
+.ctx{display:inline-block;font-family:var(--mono);font-size:11px;padding:2px 8px;border:1px solid var(--line);border-radius:10px;color:var(--fg2);margin-bottom:8px;margin-right:6px}
+.likert{display:flex;gap:6px;flex-wrap:wrap}
+.likert .opt{flex:1;text-align:center;min-width:100px}
+.chk{display:flex;flex-wrap:wrap;gap:6px}
+.chk .opt{margin:0}
+.tf{display:flex;align-items:center;gap:10px;padding:7px 10px;border:1px solid var(--line);border-radius:7px;margin:5px 0;background:var(--bg2)}
+.tf .tft{flex:1;font-size:14.5px}.tf.straight{border-left:3px solid var(--ok)}
+.tf .tfb{display:flex;gap:4px}.tf .tfb button{min-width:58px;padding:5px 8px;font-size:12.5px;font-family:var(--mono)}
+.tf .tfb button.on.t{background:#12352a;border-color:var(--ok);color:var(--ok)}.tf .tfb button.on.f{background:#3a1a2a;border-color:var(--neon);color:var(--neon)}
+.turned{margin:4px 0 0 12px;font-size:13px;color:var(--fg2)}
+.turned button{margin-right:4px}
+.turned button.on{border-color:var(--acc);color:var(--acc)}
+.note{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:8px 0;background:var(--bg2)}
+.note .h{display:flex;gap:8px;align-items:center;margin-bottom:4px;flex-wrap:wrap}
+/* css/results.css */
+/* Report furniture: bars, tables, evidence lines, findings, validity stamp,
+   change modules, check-in squares, the formula blocks. */
+.bar{display:grid;grid-template-columns:230px 1fr 110px;gap:10px;align-items:center;margin:5px 0;font-size:14px}
+.bar .tr{height:10px;background:var(--bg3);border-radius:5px;overflow:hidden;position:relative}
+.bar .fl{height:100%;background:linear-gradient(90deg,var(--acc2),var(--acc))}
+.bar .fl.warn{background:linear-gradient(90deg,#a3542e,var(--warn))}
+.bar .fl.ok{background:linear-gradient(90deg,#1f7a5c,var(--ok))}
+.bar .mk{position:absolute;top:-2px;width:2px;height:14px;background:var(--neon)}
+.bar .v{font-family:var(--mono);font-size:12px;color:var(--fg2);text-align:right}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:8px 0}
+th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{color:var(--fg2);font-weight:normal;font-family:var(--mono);font-size:12px}
+td.num{font-family:var(--mono);text-align:right;white-space:nowrap}
+.ev{border-left:2px solid var(--line);padding:4px 12px;margin:6px 0;color:var(--fg2);font-size:13.5px}
+.ev b{color:var(--fg);font-weight:normal}
+.ev .src{font-family:var(--mono);font-size:11px;color:var(--fg3)}
+.find{border-left:3px solid var(--neon);padding:8px 14px;margin:10px 0;background:var(--bg2);border-radius:0 8px 8px 0}
+.find.ok{border-color:var(--ok)}
+.find.warn{border-color:var(--warn)}
+.find.bad{border-color:#ff3f3f}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.pill{font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:10px;background:var(--bg3);color:var(--fg2)}
+.pill.self{color:var(--acc)}.pill.obs{color:var(--warn)}
+pre.math{background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:12px;font-family:var(--mono);font-size:12.5px;overflow-x:auto;color:var(--fg2);white-space:pre-wrap}
+.stamp{display:inline-block;padding:4px 12px;border-radius:6px;font-family:var(--mono);font-weight:bold;letter-spacing:.08em}
+.stamp.valid{background:#12352a;color:var(--ok)}.stamp.q{background:#3a2a12;color:var(--warn)}.stamp.invalid{background:#3a1212;color:#ff5f5f}
+.mod{border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin:10px 0;background:var(--bg2)}
+.mod h4{margin:0 0 4px;font-size:15px}
+.ci{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.ci span{width:22px;height:22px;border-radius:4px;background:var(--bg3);display:inline-block;border:1px solid var(--line);font-size:10px;text-align:center;line-height:20px;color:var(--fg3)}
+.ci span.y{background:#1f7a5c;color:#fff}.ci span.n{background:#5a2a3a;color:#fff}
+/* css/responsive.css */
+/* Two- and three-column grids, and the one narrow-screen breakpoint.
+   Loaded after the rest so the breakpoint still wins. */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:700px){.grid2,.grid3{grid-template-columns:1fr}.bar{grid-template-columns:130px 1fr 80px}}
+/* css/print.css */
+/* Printing the report. */
+@media print{header,nav,.noprint{display:none}body{background:#fff;color:#000}.card{border-color:#ccc}.bar .fl{background:#888}.ev,.muted{color:#333}.find{background:#f4f4f4}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Undertow <small>behavioral profile · evidence edition</small></h1>
+  <div class="spacer"></div>
+  <label class="tiny">subject</label><select id="subjSel"></select>
+  <span id="advHdr"><label class="tiny">rater</label><select id="raterSel"></select>
+  <button id="newSubj" class="sm">+ subject</button>
+  <button id="newRater" class="sm">+ observer</button>
+  <button id="delRater" class="danger sm">delete rater</button></span>
+</header>
+<nav id="nav"></nav>
+<main id="main"></main>
+
+<script type="module">
+/* ---- state.js ---- */
+/* The saved database: load, save, subjects, raters. localStorage key lives here. */
+
+const KEY="undertow.v3";
+
+/* ============================================================ STATE */
+
+let DB=load();
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d)return d}catch(e){}
+  const d={subjects:{},cur:{s:null,r:null}};
+  return d}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){}}
+function newSubject(){return {raters:{self:{label:"Self",kind:"self",a:{},told:{},turned:{},snapshots:[]}},log:[],notes:[],checkins:{},plan:null,created:Date.now()}}
+function S(){return DB.subjects[DB.cur.s]}
+function R(){return S().raters[DB.cur.r]}
+function ensure(){
+  if(!Object.keys(DB.subjects).length)DB.subjects["Me"]=newSubject();
+  if(!DB.cur.s||!DB.subjects[DB.cur.s])DB.cur.s=Object.keys(DB.subjects)[0];
+  if(!DB.cur.r||!S().raters[DB.cur.r])DB.cur.r="self";
+  save();
+}
+ensure();
+/* ---- util/dom.js ---- */
+/* Two helpers used everywhere: $ (querySelector) and esc (HTML escaping). */
+
+const $=s=>document.querySelector(s), esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+/* ---- data/screens.js ---- */
+/* Published screens: PHQ-9, GAD-7 and the adapted attachment items. */
+
+/* ---------- SCREENS: PHQ-9 and GAD-7 (public domain); attachment short form (adapted) ---------- */
+const PHQ = ["Little interest or pleasure in doing things","Feeling down, depressed, or hopeless","Trouble falling or staying asleep, or sleeping too much","Feeling tired or having little energy","Poor appetite or overeating","Feeling bad about yourself, or that you are a failure or have let yourself or your family down","Trouble concentrating on things, such as reading the newspaper or watching television","Moving or speaking so slowly that other people could have noticed, or the opposite: being so fidgety or restless that you have been moving around a lot more than usual","Thoughts that you would be better off dead, or of hurting yourself in some way"];
+const GAD = ["Feeling nervous, anxious, or on edge","Not being able to stop or control worrying","Worrying too much about different things","Trouble relaxing","Being so restless that it is hard to sit still","Becoming easily annoyed or irritable","Feeling afraid, as if something awful might happen"];
+const FREQ = ["Not at all","Several days","More than half the days","Nearly every day"];
+const ATT = [ // adapted two-dimension attachment items; anx = anxiety, avo = avoidance; r = reverse
+ {t:"I worry that the people I'm close to don't really care about me as much as I care about them.",d:"anx"},
+ {t:"I need a lot of reassurance that I'm loved.",d:"anx"},
+ {t:"When someone I'm close to is out of contact, I worry they're losing interest.",d:"anx"},
+ {t:"I get frustrated when people aren't available when I need them.",d:"anx"},
+ {t:"I rarely worry about being abandoned.",d:"anx",r:1},
+ {t:"I worry a lot about my relationships.",d:"anx"},
+ {t:"I prefer not to show how I feel deep down.",d:"avo"},
+ {t:"I find it difficult to depend on other people.",d:"avo"},
+ {t:"I'm comfortable sharing private thoughts and feelings with people I'm close to.",d:"avo",r:1},
+ {t:"I pull back when someone gets too close.",d:"avo"},
+ {t:"It's easy for me to turn to people I'm close to when I need to.",d:"avo",r:1},
+ {t:"I get uncomfortable when someone wants to be very close to me.",d:"avo"}
+];
+const AGR = ["Strongly disagree","Disagree","Slightly disagree","Neutral","Slightly agree","Agree","Strongly agree"];
+/* ---- answers.js ---- */
+/* Reading answers out of a rater: which items are touched, how many are done. */
+
+
+const opt=(r,q,j)=>r.a[q.id+"_"+j];
+const touched=(r,q)=>q.o?q.o.some((_,j)=>opt(r,q,j)!=null):r.a[q.id]!=null;
+const trues=(r,q)=>q.o.map((_,j)=>j).filter(j=>opt(r,q,j)===1);
+const answered=(qs,r=R())=>qs.filter(q=>touched(r,q)).length;
+
+const scrN=(r=R())=>PHQ.filter((_,i)=>r.a["P"+i]!=null).length+GAD.filter((_,i)=>r.a["G"+i]!=null).length+ATT.filter((_,i)=>r.a["A"+i]!=null).length;
+const SCR_TOTAL=PHQ.length+GAD.length+ATT.length;
+/* ---- data/gaslighting.js ---- */
+/* Gaslighting-marker scale: the seven Klein-grid markers, both directions, plus the message lexicon for them. */
+
+/* ============================================================
+   GASLIGHTING-PATTERN MARKERS
+   Categories from Sweet (2019), Klein, Li & Wood (2023), Abramson (2014), Stern (2007).
+   Measured as frequency of specific behaviors in disputes, in both directions
+   (subject toward others; others toward subject). Output is a marker index and
+   a band. It does not label anyone; a band describes a pattern in the evidence.
+   ============================================================ */
+const GL = {
+  DENY:{n:"Denying events",d:"'That never happened', 'I never said that', 'you're making it up'."},
+  MEM:{n:"Questioning memory",d:"'You're remembering it wrong', 'you're confused', 'you forgot'."},
+  TRIV:{n:"Trivializing the reaction",d:"'You're overreacting', 'too sensitive', 'dramatic', 'calm down'."},
+  PATH:{n:"Pathologizing",d:"'You're crazy', 'paranoid', 'you need help', 'delusional'."},
+  ISOL:{n:"Isolating claims",d:"'Everyone thinks you...', 'nobody else would put up with...'."},
+  WITH:{n:"Withholding",d:"'I'm not discussing this', 'drop it', refusing to engage with a stated concern."},
+  REFR:{n:"Reframing what was said",d:"'I was joking', 'you took it wrong', 'that's not what I meant' used to replace rather than clarify."}
+};
+const GLFREQ=["Never","Rarely (once or twice)","Sometimes (a few times a year)","Often (monthly or more)","Routinely (most disputes)"];
+// Subject-as-actor items (answerable by self or observer)
+const QG = [
+ {id:"G1",g:"DENY",t:"When confronted with something you said or did, you say it never happened or you never said it, when it did."},
+ {id:"G2",g:"MEM",t:"In a disagreement about what happened, you tell the other person they're remembering it wrong or are confused."},
+ {id:"G3",g:"TRIV",t:"When someone is upset by something you did, you tell them they're overreacting or too sensitive."},
+ {id:"G4",g:"PATH",t:"In arguments you call the other person crazy, paranoid, unstable, or say they need help."},
+ {id:"G5",g:"ISOL",t:"You tell the other person that everyone else agrees with you about them, or that no one else would put up with them."},
+ {id:"G6",g:"WITH",t:"When someone raises a concern, you refuse to discuss it and treat the raising of it as the problem."},
+ {id:"G7",g:"REFR",t:"After saying something hurtful, you say you were joking or they took it wrong, instead of addressing what was said."},
+ {id:"G8",g:"DENY",t:"You have told someone that something they saw or heard didn't happen the way they think, knowing it did."}
+];
+// Subject-as-target items (the Klein et al. direction: what is done to the subject)
+const QGT = [
+ {id:"T1",g:"DENY",t:"Someone close to you tells you things didn't happen that you know happened."},
+ {id:"T2",g:"MEM",t:"Someone close to you tells you your memory is unreliable, to the point that you have started doubting it."},
+ {id:"T3",g:"TRIV",t:"When you're upset, someone close to you tells you you're overreacting, and you end up apologizing for being upset."},
+ {id:"T4",g:"PATH",t:"Someone close to you calls you crazy, unstable, or paranoid during disagreements."},
+ {id:"T5",g:"ISOL",t:"Someone close to you tells you that other people think badly of you, or discourages you from checking with them."},
+ {id:"T6",g:"WITH",t:"When you raise a concern, someone close to you refuses to engage and makes the raising of it the issue."}
+];
+const LEXGL = {
+ DENY:[/\bthat (never|didn'?t) happen/,/\bi never said (that|anything)/,/\byou'?re making (that|it|things) up\b/,/\bi (didn'?t|never) (say|do) that\b/,/\bthat'?s not what happened\b/,/\bnever happened\b/],
+ MEM:[/\byou'?re remembering (it|that) wrong\b/,/\byour memory\b/,/\byou don'?t remember (it )?(right|correctly)\b/,/\byou'?re confused\b/,/\byou forgot\b/,/\byou imagined\b/,/\byou must have dreamt\b/],
+ TRIV:[/\byou'?re (over ?reacting|being dramatic|so dramatic|too sensitive|being sensitive|so sensitive)\b/,/\bcalm down\b/,/\brelax,? it'?s\b/,/\bit'?s not that (deep|serious)\b/,/\byou'?re making a big deal\b/,/\bget over it\b/],
+ PATH:[/\byou'?re (crazy|insane|psycho|delusional|paranoid|unstable|mental|nuts)\b/,/\byou need (help|therapy|meds)\b/,/\bsomething('?s| is) wrong with you\b/,/\byou'?re (sick|not well) in the head\b/],
+ ISOL:[/\beveryone (thinks|says|knows|agrees)\b/,/\bnobody (else )?(would|likes|wants|believes)\b/,/\bno one (else )?(would|likes|wants|believes)\b/,/\beven your (mom|mother|dad|father|sister|brother|friends?) (thinks?|says?|agrees?)\b/,/\bthey all think\b/],
+ WITH:[/\bi'?m not (discussing|talking about|doing) this\b/,/\bnot having this conversation\b/,/\bdrop it\b/,/\bi'?m done (talking|with this)\b/,/\bend of (discussion|conversation)\b/,/\bwe'?re not talking about (this|that)\b/],
+ REFR:[/\bi was (just )?(joking|kidding)\b/,/\byou took (it|that) (the )?wrong( way)?\b/,/\bthat'?s not what i meant\b/,/\byou'?re twisting\b/,/\byou'?re putting words in my mouth\b/]
+};
+/* ---- data/orientation.js ---- */
+/* Orientation item pairs and the domains they cover. */
+
+/* ---------- orientation as paired true/false ---------- */
+const OPAIRS=[
+ {k:"beh",t:"I have had sexual contact with {X}."},
+ {k:"beh",t:"I have had sexual contact with {X} in the last 12 months."},
+ {k:"beh",t:"I have initiated or pursued sexual contact with {X}."},
+ {k:"beh",t:"I have had a sexual relationship, more than one encounter, with {X}."},
+ {k:"beh",t:"I have kissed or been physically affectionate with {X} outside of sex."},
+ {k:"beh",t:"My first sexual experience was with {X}."},
+ {k:"attr",t:"I am sexually attracted to {X}."},
+ {k:"attr",t:"I have fantasized about {X} while alone in the last year."},
+ {k:"attr",t:"I seek out sexual material featuring {X}."},
+ {k:"attr",t:"{X} can reliably arouse me."},
+ {k:"attr",t:"I notice {X} in a sexual way in everyday settings."},
+ {k:"emo",t:"I have fallen in love with {X}."},
+ {k:"emo",t:"I have wanted a romantic relationship with {X}."},
+ {k:"ideal",t:"If nobody would know and nothing would follow from it, I would have sex with {X}."},
+ {k:"ideal",t:"If nobody would know and nothing would follow from it, I would want a relationship with {X}."},
+ {k:"label",t:"Asked directly, I would say I am attracted to {X}."},
+ {k:"label",t:"I have told someone I am attracted to {X}."},
+ {k:"hide",t:"I have hidden attraction to or contact with {X} from people close to me."},
+ {k:"hide",t:"I have denied attraction to {X} when I felt it."},
+ {k:"sought",t:"My sexual contact with {X} has only happened when it was offered; I have never sought it."}
+];
+const ODOM={beh:"Behavior",attr:"Attraction",emo:"Emotional",ideal:"Ideal (no consequences)",label:"Self-label",hide:"Concealment",sought:"Only when offered"};
+const QO=[];OPAIRS.forEach((p,i)=>{QO.push({id:"OS"+i,k:p.k,side:"same",t:p.t.replace("{X}","someone of the same sex")});QO.push({id:"OO"+i,k:p.k,side:"other",t:p.t.replace("{X}","someone of the other sex")})});
+/* ---- data/questions.js ---- */
+/* Question banks for insecurities, deception, love language, emotion and self-view. */
+
+/* ---------- INSECURITY ITEMS ---------- */
+const QI = [
+ {id:"I1",t:"A friend hasn't replied to your message in two days. What do you actually do?",tests:["AB","DS","MA"],o:[
+  {t:"Send another message, or check whether they've been online.",w:{AB:1.1}},
+  {t:"Assume I said something wrong and reread what I sent.",w:{DS:.9,AB:.5}},
+  {t:"Decide I don't care and stop reaching out first.",w:{AB:.8,MA:.5}},
+  {t:"Nothing. They're busy.",w:{}}]},
+ {id:"I2",t:"Someone compliments something you made. First internal reaction?",tests:["FA","US","MA","DS"],o:[
+  {t:"Point out the flaws in it.",w:{US:1.1,DS:.6}},
+  {t:"Wonder what they want.",w:{MA:1.1}},
+  {t:"Feel good, then worry I can't repeat it.",w:{FA:1.1,US:.5}},
+  {t:"Take it.",w:{}}]},
+ {id:"I3",t:"Which of these would bother you most if it happened tomorrow?",tests:["AB","FA","SS","VH","DS"],o:[
+  {t:"Partner or close friend goes quiet and distant for a week.",w:{AB:1.1}},
+  {t:"Someone I respect publicly corrects my mistake.",w:{FA:.9,DS:.6}},
+  {t:"Someone I trust says 'you're a lot to deal with.'",w:{SS:1.1}},
+  {t:"Plans change at the last minute and I wasn't consulted.",w:{VH:1.1}},
+  {t:"Someone finds a private thing I wrote.",w:{DS:1.1}}]},
+ {id:"I4",t:"When you need help with something, what usually happens?",tests:["SS","SB","ED"],o:[
+  {t:"I don't ask. I figure it out or go without.",w:{SS:.9,ED:.7}},
+  {t:"I ask, but apologize several times.",w:{SS:1.1}},
+  {t:"I ask, and make it sound smaller than it is.",w:{SS:.6,SB:.6}},
+  {t:"I ask.",w:{}}]},
+ {id:"I5",t:"You walk into a room where people are already talking. First thought?",tests:["DS","AS","FA","VH"],o:[
+  {t:"Whether they were talking about me.",w:{DS:1.1,MA:.5}},
+  {t:"Whether I look okay.",w:{AS:1.1}},
+  {t:"How to get the conversation onto something I know.",w:{FA:.8,VH:.6}},
+  {t:"Where the exit is / how long I have to stay.",w:{DS:.6}},
+  {t:"Nothing in particular.",w:{}}]},
+ {id:"I6",t:"Someone close to you succeeds at something you also wanted. Honest reaction?",tests:["AS","FA","AB"],o:[
+  {t:"Happy for them, then a private sting about where I'm at.",w:{AS:.9,FA:.6}},
+  {t:"Wonder if they'll still have time for me now.",w:{AB:1.1}},
+  {t:"Look for reasons it was luck or connections.",w:{AS:.8,MA:.4}},
+  {t:"Just happy.",w:{}}]},
+ {id:"I7",t:"Which sentence, said to you in an argument, would land hardest?",tests:["AB","FA","SS","VH","DS"],o:[
+  {t:"\"I don't need you.\"",w:{AB:1.1,ED:.4}},
+  {t:"\"You're not as smart as you think.\"",w:{FA:1.1}},
+  {t:"\"You're exhausting.\"",w:{SS:1.1}},
+  {t:"\"You always have to have it your way.\"",w:{VH:1.1}},
+  {t:"\"Everyone can see through you.\"",w:{DS:1.1}}]},
+ {id:"I8",t:"You share something with a group and get no response. What do you do?",tests:["DS","AB","AS"],o:[
+  {t:"Delete it or take it back.",w:{DS:1.1}},
+  {t:"Check repeatedly.",w:{AS:.8,AB:.6}},
+  {t:"Decide the group is dead or not worth it.",w:{AB:.6,MA:.5}},
+  {t:"Forget about it.",w:{}}]},
+ {id:"I9",t:"Which would you most want said about you?",tests:["SS","US","AS","VH","DS"],o:[
+  {t:"\"They're always there when you need them.\"",w:{SS:.9,AB:.4}},
+  {t:"\"They're the best at what they do.\"",w:{US:.9,AS:.6}},
+  {t:"\"They're easy to be around.\"",w:{SS:1.1}},
+  {t:"\"They know what they're doing.\"",w:{VH:.8,FA:.5}},
+  {t:"\"They're genuine.\"",w:{DS:.8}}]},
+ {id:"I10",t:"Someone cancels plans with you. First thought?",tests:["AB","DS","ED","MA"],o:[
+  {t:"What did I do?",w:{DS:.8,AB:.6}},
+  {t:"I knew they didn't really want to come.",w:{ED:1.1,DS:.5}},
+  {t:"Fine, I'd rather not have gone anyway (even if that isn't true).",w:{AB:.7,MA:.5}},
+  {t:"Reschedule.",w:{}}]},
+ {id:"I11",t:"How do you handle being wrong in front of others?",tests:["FA","DS","VH"],o:[
+  {t:"Argue longer than I should.",w:{VH:.9,FA:.7}},
+  {t:"Go quiet and think about it for days.",w:{DS:1.1}},
+  {t:"Make a joke about myself before they can.",w:{DS:.8,FA:.5}},
+  {t:"Say 'you're right' and move on.",w:{}}]},
+ {id:"I12",t:"You've had a bad day. Who knows?",tests:["SS","DS","ED"],o:[
+  {t:"Nobody. I don't want to bring anyone down.",w:{SS:1.1,ED:.5}},
+  {t:"Only if someone asks directly, and I'll downplay it.",w:{SS:.7,SB:.5}},
+  {t:"I tell someone, but frame it as funny.",w:{DS:.8}},
+  {t:"Whoever I'm close to.",w:{}}]},
+ {id:"I13",t:"Someone is kind to you for no obvious reason. Your instinct?",tests:["MA","SS","DS","ED"],o:[
+  {t:"Suspicious. What do they want?",w:{MA:1.1}},
+  {t:"Uncomfortable. Now I owe them.",w:{SS:1.1}},
+  {t:"Try to figure out what I did to earn it.",w:{DS:.8,ED:.5}},
+  {t:"Accept it.",w:{}}]},
+ {id:"I14",t:"In a close relationship, which do you check on most (even quietly)?",tests:["AB","SS","DS","VH","FA"],o:[
+  {t:"Whether they still want me around.",w:{AB:1.1}},
+  {t:"Whether I'm doing enough / pulling my weight.",w:{SS:.8,FA:.5}},
+  {t:"Whether they see something in me I'm hiding.",w:{DS:1.1}},
+  {t:"Whether things are going the way I planned.",w:{VH:1.1}},
+  {t:"I don't check.",w:{}}]},
+ {id:"I15",t:"Something you did is 'good enough' by everyone else's standard. You:",tests:["US","SB","FA"],o:[
+  {t:"It isn't. I keep going.",w:{US:1.1}},
+  {t:"Stop only because someone tells me to.",w:{US:.6,SB:.6}},
+  {t:"Feel relief, then doubt.",w:{FA:.7}},
+  {t:"Stop.",w:{}}]},
+ {id:"I16",t:"Someone asks what YOU want (restaurant, plan, decision).",tests:["SB","SS"],o:[
+  {t:"\"Whatever you want,\" even when I have a preference.",w:{SB:1.1}},
+  {t:"I say what I want, then take it back if they hesitate.",w:{SB:.8,AB:.4}},
+  {t:"I pick what they'd like.",w:{SS:.8,SB:.4}},
+  {t:"I say what I want.",w:{}}]},
+ {id:"I17",t:"When you're upset, what do you expect from the people closest to you?",tests:["ED","MA","SS","AB"],o:[
+  {t:"Not much. I've learned to handle it.",w:{ED:1.1}},
+  {t:"That they'll get it wrong.",w:{ED:.8,MA:.5}},
+  {t:"That they'll get tired of it.",w:{SS:.7,AB:.5}},
+  {t:"That they'll show up.",w:{}}]},
+ {id:"I18",t:"A partner or close friend is in a bad mood that has nothing to do with you.",tests:["AB","MA","SS","VH"],o:[
+  {t:"I assume it's about me until proven otherwise.",w:{AB:.8,DS:.5}},
+  {t:"I brace for it to be turned on me.",w:{MA:1.1}},
+  {t:"I try to fix it so it goes away.",w:{SS:.9,VH:.5}},
+  {t:"I leave them to it.",w:{}}]},
+ {id:"I19",t:"You get an unexpected message: 'we need to talk.'",tests:["AB","DS","VH","MA"],o:[
+  {t:"I assume it's over / they're leaving.",w:{AB:1.1}},
+  {t:"I run through everything they might have found out.",w:{DS:1.1}},
+  {t:"I prepare arguments before I know the topic.",w:{VH:.9,FA:.4}},
+  {t:"I assume they're setting me up.",w:{MA:1.1}},
+  {t:"I ask what about.",w:{}}]},
+ {id:"I20",t:"When you're praised in front of others:",tests:["AS","DS","US","FA"],o:[
+  {t:"I replay it for days; it's what I'm working for.",w:{AS:1.1}},
+  {t:"I feel exposed, like they'll find out I'm not that.",w:{DS:1.1,FA:.5}},
+  {t:"I think about what still isn't done.",w:{US:1.1}},
+  {t:"It's fine.",w:{}}]}
+];
+
+/* ---------- DECEPTION ITEMS ---------- */
+const QD = [
+ {id:"D1",c:"partner",t:"Your partner asks 'Are you okay?' You're not, and the reason involves them. You say:",o:[
+  {t:"\"I'm fine, just tired.\"",m:["MIN","DEN"]},{t:"\"Why, do I seem not okay?\"",m:["DFL"]},
+  {t:"\"Yeah, why wouldn't I be?\"",m:["DEN","DFL"]},{t:"\"Not really. It's about earlier.\"",honest:1}]},
+ {id:"D2",c:"partner",t:"You spent money you'd agreed not to spend. Your partner asks about the account.",o:[
+  {t:"Mention the purchase but round it down.",m:["MIN"]},{t:"Explain everything that made it necessary before they can react.",m:["IMP"]},
+  {t:"\"Same as usual, nothing much.\"",m:["CON","EQV"]},{t:"Tell them the number.",honest:1}]},
+ {id:"D3",c:"partner",t:"You forgot something that mattered to them. When it comes up:",o:[
+  {t:"Point out something they forgot.",m:["PRJ","DFL"]},{t:"\"I've had so much on, you know how it's been.\"",m:["IMP","RAT"]},
+  {t:"Say you remembered but couldn't.",m:["FAL"]},{t:"\"I forgot. I'm sorry.\"",honest:1}]},
+ {id:"D4",c:"partner",t:"Your partner asks your opinion on something they're excited about. You don't like it.",o:[
+  {t:"\"Yeah, it's good.\"",m:["CMP"]},{t:"\"It's interesting\" / \"whatever makes you happy.\"",m:["EQV"]},
+  {t:"Change the subject to something related.",m:["DFL"]},{t:"Tell them what I actually think, kindly.",honest:1}]},
+ {id:"D5",c:"family",t:"A relative asks how money / work / your relationship is going. It's bad.",o:[
+  {t:"\"It's going.\" Move on.",m:["EQV","CON"]},{t:"Make it sound better than it is.",m:["FAL"]},
+  {t:"Ask about them instead.",m:["DFL"]},{t:"Tell them.",honest:1}]},
+ {id:"D6",c:"family",t:"A family member did something that hurt you years ago. It comes up.",o:[
+  {t:"\"It was fine, I don't even think about it.\"",m:["DEN","MIN"]},{t:"Laugh it off.",m:["DFL","MIN"]},
+  {t:"Bring up what everyone else did too.",m:["PRJ","DFL"]},{t:"Say it hurt.",honest:1}]},
+ {id:"D7",c:"family",t:"You're skipping a family event because you don't want to go.",o:[
+  {t:"Invent a conflict.",m:["FAL"]},{t:"Say I'll 'try to make it,' knowing I won't.",m:["EQV","CMP"]},
+  {t:"Give a long list of reasons nobody asked for.",m:["IMP"]},{t:"Say I'm not coming.",honest:1}]},
+ {id:"D8",c:"family",t:"A family member asks if you're upset with them. You are.",o:[
+  {t:"\"No.\"",m:["DEN"]},{t:"\"I'm just stressed with other stuff.\"",m:["DFL","RAT"]},
+  {t:"\"Why would I be?\"",m:["DFL","DEN"]},{t:"\"Yeah, a bit.\"",honest:1}]},
+ {id:"D9",c:"work",t:"You missed a deadline. Your manager asks what happened.",o:[
+  {t:"Cite the things that got in the way, some of which are true.",m:["FAL","PRJ"]},{t:"Say it's 'basically done.'",m:["MIN"]},
+  {t:"Explain in detail before they finish the question.",m:["IMP"]},{t:"\"I missed it. Here's when it'll be done.\"",honest:1}]},
+ {id:"D10",c:"work",t:"You don't understand something in a meeting.",o:[
+  {t:"Nod. Look it up later.",m:["CMP","CON"]},{t:"Ask a question phrased so it sounds like I already know.",m:["FAL","EQV"]},
+  {t:"Wait to see if someone else asks.",m:["CON"]},{t:"Ask.",honest:1}]},
+ {id:"D11",c:"work",t:"Someone senior takes credit for your idea.",o:[
+  {t:"Say nothing; tell myself it doesn't matter.",m:["RAT","DEN"]},{t:"Mention it to peers, never to them.",m:["CON"]},
+  {t:"Bring it up with humor so it's deniable.",m:["DFL"]},{t:"Raise it directly.",honest:1}]},
+ {id:"D12",c:"work",t:"You made an error nobody has noticed yet.",o:[
+  {t:"Fix it quietly and say nothing.",m:["CON"]},{t:"Mention it in a way that makes it sound smaller.",m:["MIN"]},
+  {t:"Wait. If it comes up, deal with it then.",m:["CON","RAT"]},{t:"Flag it.",honest:1}]},
+ {id:"D13",c:"friends",t:"A friend asks if you like their new partner. You don't.",o:[
+  {t:"\"They seem nice.\"",m:["CMP"]},{t:"\"As long as you're happy.\"",m:["EQV"]},
+  {t:"Ask what THEY like about them.",m:["DFL"]},{t:"Say what concerns me.",honest:1}]},
+ {id:"D14",c:"friends",t:"You bailed on a friend because you didn't feel like it.",o:[
+  {t:"Say I was sick or busy.",m:["FAL"]},{t:"\"Something came up.\"",m:["EQV"]},
+  {t:"Over-apologize and explain at length.",m:["IMP"]},{t:"Say I needed a night in.",honest:1}]},
+ {id:"D15",c:"friends",t:"A friend tells a story about you that isn't how it happened.",o:[
+  {t:"Let it go; correcting them feels petty.",m:["RAT","CMP"]},{t:"Laugh along, then tell myself it doesn't matter.",m:["RAT"]},
+  {t:"Add a detail that makes me look better.",m:["FAL"]},{t:"Correct it.",honest:1}]},
+ {id:"D16",c:"friends",t:"A friend asks to borrow money. You don't want to lend it.",o:[
+  {t:"\"I'm short right now.\" (I'm not.)",m:["FAL"]},{t:"\"Let me see what I can do.\"",m:["EQV","CMP"]},
+  {t:"Lend it, resent it.",m:["CMP"]},{t:"\"No.\"",honest:1}]},
+ {id:"D17",c:"self",t:"You did something you're not proud of. That night, the version in your head is:",o:[
+  {t:"Mostly about what they did to cause it.",m:["PRJ"]},{t:"\"It wasn't that bad.\"",m:["MIN"]},
+  {t:"A more reasonable story than what happened.",m:["RAT"]},{t:"What happened.",honest:1}]},
+ {id:"D18",c:"self",t:"You keep not doing something you said you'd do. The explanation you give yourself:",o:[
+  {t:"\"I'll do it when things calm down.\"",m:["RAT"]},{t:"\"I don't actually care about it that much.\"",m:["DEN"]},
+  {t:"\"It's not really a big deal.\"",m:["MIN"]},{t:"\"I'm avoiding it.\"",honest:1}]},
+ {id:"D19",c:"self",t:"When you replay a conversation where you were hurt:",o:[
+  {t:"I edit what I said so I come off stronger.",m:["FAL"]},{t:"I decide I wasn't actually hurt.",m:["DEN","MIN"]},
+  {t:"I focus on what was wrong with them.",m:["PRJ"]},{t:"I sit with what actually happened.",honest:1}]},
+ {id:"D20",c:"self",t:"How do you decide something is 'not worth bringing up'?",o:[
+  {t:"If it might start a fight, it's not worth it.",m:["CON"]},{t:"If I can't explain it perfectly, it's not worth it.",m:["IMP","CON"]},
+  {t:"If they didn't mean it, it doesn't count.",m:["RAT"]},{t:"I don't decide that. I bring things up.",honest:1}]},
+ {id:"D21",c:"public",t:"Someone you barely know asks what you do / how you're doing.",o:[
+  {t:"Give the impressive version.",m:["FAL"]},{t:"\"Good, busy.\"",m:["EQV"]},
+  {t:"Turn it back to them fast.",m:["DFL"]},{t:"Answer plainly.",honest:1}]},
+ {id:"D22",c:"public",t:"An acquaintance is wrong about something you know well.",o:[
+  {t:"Agree or stay quiet.",m:["CMP"]},{t:"\"I think I read something different...\" though I'm certain.",m:["MIN","EQV"]},
+  {t:"Correct them with a joke.",m:["DFL"]},{t:"Correct them.",honest:1}]},
+ {id:"D23",c:"public",t:"You're asked to do something at an event (speak, help, join). You don't want to.",o:[
+  {t:"\"Maybe later.\"",m:["EQV"]},{t:"Invent a reason.",m:["FAL"]},
+  {t:"Do it and act fine.",m:["CMP"]},{t:"Decline.",honest:1}]},
+ {id:"D24",c:"public",t:"Someone asks about a visible thing you're self-conscious about.",o:[
+  {t:"Joke about it before they finish.",m:["DFL"]},{t:"Explain unprompted why it's like that.",m:["IMP"]},
+  {t:"\"Oh that? It's nothing.\"",m:["MIN"]},{t:"Answer the question.",honest:1}]},
+ {id:"D25",c:"partner",t:"Your partner asks where you were / who you were with, and the true answer would start something.",o:[
+  {t:"Give the part that won't start anything.",m:["CON"]},{t:"\"Out. Nowhere special.\"",m:["EQV","CON"]},
+  {t:"\"Why are you interrogating me?\"",m:["DFL","PRJ"]},{t:"Tell them.",honest:1}]},
+ {id:"D26",c:"partner",t:"You said something in a fight you know was unfair. Next day:",o:[
+  {t:"Act normal and hope it's dropped.",m:["CON","DEN"]},{t:"\"I only said it because you...\"",m:["PRJ","RAT"]},
+  {t:"\"I didn't mean it like that.\"",m:["MIN"]},{t:"\"That was unfair. I'm sorry.\"",honest:1}]},
+ {id:"D27",c:"family",t:"A parent asks if you're happy. You aren't.",o:[
+  {t:"\"Yeah, things are good.\"",m:["FAL","CMP"]},{t:"\"Can't complain.\"",m:["EQV"]},
+  {t:"\"Are YOU happy?\"",m:["DFL"]},{t:"\"Not really, lately.\"",honest:1}]},
+ {id:"D28",c:"work",t:"A colleague asks if you've finished the thing you promised. You haven't started.",o:[
+  {t:"\"Almost.\"",m:["FAL","MIN"]},{t:"\"It's in progress.\"",m:["EQV"]},
+  {t:"List what got in the way.",m:["IMP","PRJ"]},{t:"\"I haven't started. I'll have it by...\"",honest:1}]},
+ {id:"D29",c:"friends",t:"A friend says something about you that's true and uncomfortable.",o:[
+  {t:"\"That's not what happened.\"",m:["DEN"]},{t:"\"You do the same thing.\"",m:["PRJ"]},
+  {t:"Laugh and move on.",m:["DFL"]},{t:"\"Yeah. You're right.\"",honest:1}]},
+ {id:"D30",c:"self",t:"You notice you've been avoiding someone. The reason you land on:",o:[
+  {t:"I'm just busy.",m:["RAT"]},{t:"They're the problem.",m:["PRJ"]},
+  {t:"It's not avoiding, it's a natural drift.",m:["MIN","RAT"]},{t:"I'm avoiding something I don't want to face with them.",honest:1}]}
+];
+
+/* ---------- LOVE LANGUAGE ITEMS ---------- */
+const QL = [
+ {id:"L1",dir:"receive",t:"After a hard week, which would make you feel most cared for?",o:[
+  {t:"Someone telling me specifically what they see in me.",l:"W"},{t:"Someone clearing a whole evening just to be with me.",l:"T"},
+  {t:"Finding something I'd been dreading already done.",l:"A"},{t:"A small thing that shows they were thinking of me.",l:"G"},
+  {t:"Being held for a while without needing to talk.",l:"P"}]},
+ {id:"L2",dir:"receive",t:"Which absence hurts most in a relationship?",o:[
+  {t:"They never say how they feel about me.",l:"W"},{t:"They're always distracted when we're together.",l:"T"},
+  {t:"They never lift a finger for me.",l:"A"},{t:"They forget dates and never bring anything.",l:"G"},{t:"They rarely reach for me.",l:"P"}]},
+ {id:"L3",dir:"receive",t:"Think of the last time you felt genuinely loved. What was happening?",o:[
+  {t:"Something they said.",l:"W"},{t:"Something they made time for.",l:"T"},{t:"Something they did for me.",l:"A"},
+  {t:"Something they gave me.",l:"G"},{t:"How they touched me.",l:"P"}]},
+ {id:"L4",dir:"receive",t:"After a fight, what do you most need to feel it's repaired?",o:[
+  {t:"To hear them say it's okay and why they still want me.",l:"W"},{t:"Time together like normal.",l:"T"},
+  {t:"Them doing something practical for me.",l:"A"},{t:"A peace offering.",l:"G"},{t:"A hug.",l:"P"}]},
+ {id:"L5",dir:"receive",t:"What do you secretly keep score on, even if you'd never say it?",o:[
+  {t:"Whether they say thank you / say nice things.",l:"W"},{t:"Whether they choose to spend free time with me.",l:"T"},
+  {t:"Whether they help without being asked.",l:"A"},{t:"Whether they remember and bring things.",l:"G"},{t:"Whether they initiate affection.",l:"P"}]},
+ {id:"L6",dir:"give",t:"When someone you love is struggling, what do you actually do first?",o:[
+  {t:"Tell them what I see in them / encourage.",l:"W"},{t:"Sit with them.",l:"T"},{t:"Handle something for them.",l:"A"},
+  {t:"Bring them something.",l:"G"},{t:"Hug them / physical comfort.",l:"P"}]},
+ {id:"L7",dir:"give",t:"How do you usually apologize?",o:[
+  {t:"I say it, in detail.",l:"W"},{t:"I make time and show up.",l:"T"},{t:"I fix something / do something for them.",l:"A"},
+  {t:"I bring something.",l:"G"},{t:"I'm physically closer, more affectionate.",l:"P"}]},
+ {id:"L8",dir:"give",t:"Which comes most naturally, without thinking?",o:[
+  {t:"Compliments and saying what I appreciate.",l:"W"},{t:"Choosing to hang out over other things.",l:"T"},
+  {t:"Doing things: errands, fixing, cooking.",l:"A"},{t:"Picking up things people would like.",l:"G"},{t:"Touch: hands, hugs, leaning in.",l:"P"}]},
+ {id:"L9",dir:"give",t:"When you want someone to know you love them without saying it:",o:[
+  {t:"I write it down anyway.",l:"W"},{t:"I plan time together.",l:"T"},{t:"I do something for them.",l:"A"},
+  {t:"I give them something.",l:"G"},{t:"I touch them.",l:"P"}]},
+ {id:"L10",dir:"deficit",t:"What have you been complained about for NOT doing? (pick the most common)",o:[
+  {t:"Not saying how I feel.",l:"W"},{t:"Not being present / always distracted.",l:"T"},{t:"Not helping / not following through.",l:"A"},
+  {t:"Forgetting occasions / never bringing anything.",l:"G"},{t:"Not being affectionate.",l:"P"},{t:"None of these.",l:null}]}
+];
+
+/* ---------- EMOTION ITEMS ---------- */
+const QE = [
+ {id:"E1",e:"anger",t:"Someone close to you does something that genuinely angers you. What do they actually see?",o:[
+  {t:"I tell them I'm angry and why.",mo:"direct"},{t:"Nothing. I go quiet and it comes out later about something else.",mo:"withdraw"},
+  {t:"I get sarcastic / make cutting jokes.",mo:"humor"},{t:"I cry, even though what I feel is anger.",mo:"tears"},
+  {t:"I decide I'm not angry, I'm 'disappointed.'",mo:"suppress"}]},
+ {id:"E2",e:"anger",t:"When anger builds up over time, where does it go?",o:[
+  {t:"I address it while it's small.",mo:"direct"},{t:"I snap at someone who didn't cause it.",mo:"displace"},
+  {t:"Into my body: headaches, tension, sleep.",mo:"somatic"},{t:"I go cold and distant.",mo:"withdraw"},{t:"Nowhere. I don't really get angry.",mo:"suppress"}]},
+ {id:"E3",e:"anger",t:"Last time you were angry at someone with power over you (boss, parent, authority):",o:[
+  {t:"Said something.",mo:"direct"},{t:"Complied, complained elsewhere.",mo:"displace"},{t:"Joked about it.",mo:"humor"},
+  {t:"Went through the motions and disengaged.",mo:"withdraw"},{t:"Told myself it was fair.",mo:"suppress"}]},
+ {id:"E4",e:"sadness",t:"You're sad about something real. Who can tell?",o:[
+  {t:"People I'm close to. I say so.",mo:"direct"},{t:"Nobody. I get busy.",mo:"suppress"},{t:"People might notice I'm irritable.",mo:"anger"},
+  {t:"I make jokes about it.",mo:"humor"},{t:"I disappear for a while.",mo:"withdraw"}]},
+ {id:"E5",e:"sadness",t:"Someone asks 'what's wrong?' when you're sad.",o:[
+  {t:"I tell them.",mo:"direct"},{t:"\"Nothing, just tired.\"",mo:"suppress"},{t:"I get annoyed at being asked.",mo:"anger"},
+  {t:"I say something funny.",mo:"humor"},{t:"I cry but can't say why.",mo:"tears"}]},
+ {id:"E6",e:"sadness",t:"When you lose something (a person, a plan, an opportunity):",o:[
+  {t:"I grieve it openly for a while.",mo:"direct"},{t:"I move on immediately and refuse to look back.",mo:"suppress"},
+  {t:"I get angry at whoever I can blame.",mo:"anger"},{t:"I go quiet and people think I'm fine.",mo:"withdraw"},{t:"I throw myself into something else.",mo:"displace"}]},
+ {id:"E7",e:"fear",t:"You're afraid of something (an outcome, a conversation, a result). What do others see?",o:[
+  {t:"I say I'm scared.",mo:"direct"},{t:"Irritability, short temper.",mo:"anger"},{t:"Over-preparing, checklists, control.",mo:"control"},
+  {t:"Jokes.",mo:"humor"},{t:"Nothing. I act certain.",mo:"suppress"}]},
+ {id:"E8",e:"fear",t:"Before something you're nervous about:",o:[
+  {t:"I tell someone I'm nervous.",mo:"direct"},{t:"I get snippy with people around me.",mo:"anger"},{t:"I go silent.",mo:"withdraw"},
+  {t:"I make light of it.",mo:"humor"},{t:"I can't eat / can't sleep / feel sick.",mo:"somatic"}]},
+ {id:"E9",e:"fear",t:"Someone you love is at risk (health, travel, danger).",o:[
+  {t:"I say I'm worried.",mo:"direct"},{t:"I get controlling about their choices.",mo:"control"},{t:"I get angry at them for the risk.",mo:"anger"},
+  {t:"I act like it's fine.",mo:"suppress"},{t:"I fuss over practical things and never say the feeling.",mo:"displace"}]},
+ {id:"E10",e:"joy",t:"Something great happens to you. What do people see?",o:[
+  {t:"I'm openly happy about it.",mo:"direct"},{t:"I downplay it so no one thinks I'm bragging.",mo:"suppress"},
+  {t:"I immediately look for what could go wrong.",mo:"worry"},{t:"I joke about it.",mo:"humor"},{t:"I tell almost no one.",mo:"withdraw"}]},
+ {id:"E11",e:"joy",t:"When you're enjoying something in the moment (a good day, meal, song):",o:[
+  {t:"I say so out loud.",mo:"direct"},{t:"I notice but don't mention it.",mo:"suppress"},{t:"I start thinking about when it'll end.",mo:"worry"},
+  {t:"I make it into a bit.",mo:"humor"},{t:"I wait for someone else to say it first.",mo:"withdraw"}]},
+ {id:"E12",e:"joy",t:"Someone celebrates you (birthday, praise, a win). You:",o:[
+  {t:"Enjoy it.",mo:"direct"},{t:"Get uncomfortable and redirect.",mo:"suppress"},{t:"Feel like I don't deserve it.",mo:"shame"},
+  {t:"Make self-deprecating jokes.",mo:"humor"},{t:"Wish it would end.",mo:"withdraw"}]},
+ {id:"E13",e:"hurt",t:"Someone says something that hurts you. In the moment:",o:[
+  {t:"I say 'that hurt.'",mo:"direct"},{t:"I say nothing and think about it for days.",mo:"withdraw"},{t:"I fire back.",mo:"anger"},
+  {t:"I laugh.",mo:"humor"},{t:"I decide they're right.",mo:"suppress"}]},
+ {id:"E14",e:"hurt",t:"You're embarrassed about something you did.",o:[
+  {t:"Own it, maybe even tell the story.",mo:"direct"},{t:"Avoid the people who saw it.",mo:"withdraw"},{t:"Get defensive if it comes up.",mo:"anger"},
+  {t:"Joke about it first.",mo:"humor"},{t:"Rewrite what happened in my head.",mo:"suppress"}]},
+ {id:"E15",e:"hurt",t:"Someone catches you in a mistake or a lie.",o:[
+  {t:"Admit it.",mo:"direct"},{t:"Attack.",mo:"anger"},{t:"Go quiet / shut down.",mo:"withdraw"},
+  {t:"Deflect with humor.",mo:"humor"},{t:"Explain until it isn't a mistake anymore.",mo:"control"}]},
+ {id:"E16",e:"affection",t:"You feel warmth toward someone. What do they get?",o:[
+  {t:"I tell them.",mo:"direct"},{t:"I tease them.",mo:"humor"},{t:"I do something for them and never mention it.",mo:"displace"},
+  {t:"Nothing. I assume they know.",mo:"suppress"},{t:"I get awkward and pull back.",mo:"withdraw"}]},
+ {id:"E17",e:"affection",t:"Someone says 'I love you' or 'I appreciate you' first.",o:[
+  {t:"I say it back and mean it.",mo:"direct"},{t:"I joke.",mo:"humor"},{t:"I say 'you too' fast and change the subject.",mo:"withdraw"},
+  {t:"I freeze.",mo:"suppress"},{t:"I get suspicious.",mo:"shame"}]},
+ {id:"E18",e:"affection",t:"When you miss someone:",o:[
+  {t:"I tell them.",mo:"direct"},{t:"I get irritable with them when we finally talk.",mo:"anger"},{t:"I show up with something / do something.",mo:"displace"},
+  {t:"I wait for them to reach out.",mo:"withdraw"},{t:"I convince myself I don't.",mo:"suppress"}]}
+];
+
+/* ---------- SELF-VIEW ---------- */
+const QS = [
+ {id:"S1",t:"I'm an honest person. I don't really lie.",cmp:"honesty"},
+ {id:"S2",t:"I don't have many insecurities.",cmp:"insecurity"},
+ {id:"S3",t:"People always know how I feel.",cmp:"direct"},
+ {id:"S4",t:"When I'm angry, people know it.",cmp:"anger"},
+ {id:"S5",t:"I know exactly what makes me feel loved.",cmp:"love"},
+ {id:"S6",t:"I'm the same person in every setting.",cmp:"consistency"}
+];
+const LIK = ["Strongly disagree","Disagree","Neutral","Agree","Strongly agree"];
+/* ---- data/validity.js ---- */
+/* Validity items: the lie scale and the reworded inconsistency pairs. */
+
+/* ---------- VALIDITY: lie scale (agree = implausible virtue) + inconsistency pairs ---------- */
+const QV = [
+ {id:"V1",t:"I have never said something I didn't mean."},
+ {id:"V2",t:"I have never been late for anything that mattered."},
+ {id:"V3",t:"I always tell the truth even when it costs me."},
+ {id:"V4",t:"I have never resented doing someone a favor."},
+ {id:"V5",t:"I have never talked about someone behind their back."},
+ {id:"V6",t:"I have never pretended to like a gift."},
+ {id:"V7",t:"I have never felt jealous of a friend."},
+ {id:"V8",t:"I admit my mistakes the moment I notice them, every time."}
+];
+// inconsistency pairs: reworded copies of earlier items; options are the same categories in a different order.
+// map[j] = index of the option in the original item that option j here corresponds to.
+const QX = [
+ {id:"X1",of:"I1",t:"Someone you messaged has gone quiet for a couple of days. What actually happens?",o:[
+  {t:"I leave it. People get busy.",map:3},{t:"I go back over what I wrote for the thing I got wrong.",map:1},
+  {t:"I nudge them again or look at whether they've been active.",map:0},{t:"I stop initiating. If they want me, they know where I am.",map:2}]},
+ {id:"X2",of:"D4",t:"Your partner shows you something they're proud of. You think it's a bad idea.",o:[
+  {t:"I say what I think, gently.",map:3},{t:"I steer us onto something nearby.",map:2},
+  {t:"I say it's great.",map:0},{t:"\"If it makes you happy.\"",map:1}]},
+ {id:"X3",of:"D14",t:"You cancelled on a friend because you couldn't be bothered.",o:[
+  {t:"\"Something came up.\"",map:1},{t:"I tell them I needed a quiet night.",map:3},
+  {t:"I say I wasn't well.",map:0},{t:"I apologize at length and explain a lot.",map:2}]},
+ {id:"X4",of:"E5",t:"You're low and someone notices and asks.",o:[
+  {t:"I get short with them for asking.",map:2},{t:"I tell them what's going on.",map:0},
+  {t:"I tear up and can't put words to it.",map:4},{t:"I make a joke.",map:3},{t:"\"I'm fine, tired.\"",map:1}]},
+ {id:"X5",of:"E13",t:"A comment lands and it stings.",o:[
+  {t:"I laugh it off.",map:3},{t:"I hit back.",map:2},{t:"I say it stung.",map:0},
+  {t:"I go quiet and carry it for days.",map:1},{t:"I figure they've got a point.",map:4}]},
+ {id:"X6",of:"I4",t:"You're stuck and could use a hand.",o:[
+  {t:"I ask.",map:3},{t:"I ask but shrink it down.",map:2},{t:"I ask and say sorry a lot.",map:1},{t:"I manage alone.",map:0}]}
+];
+/* ---- messages/store.js ---- */
+/* Session-only message store (never saved to disk). */
+
+/* ---------- UI ---------- */
+let MSG_RAW={};   // filename -> messages (session only)
+let MSG_DIAG={};  // filename -> parse diagnosis (no content)
+/* ---- messages/inbox.js ---- */
+/* Threads handed over by the sibling apps through localStorage. */
+
+function drainInbox(){ // threads handed over by Verbatim / Kindling (same app storage)
+  let inbox=[];try{inbox=JSON.parse(localStorage.getItem("undertow.inbox"))||[]}catch(e){}
+  if(!inbox.length)return 0;
+  for(const t of inbox){if(t&&t.msgs&&t.msgs.length)MSG_RAW[t.name||("handed over "+(Object.keys(MSG_RAW).length+1))]=t.msgs.slice().sort((a,b)=>(a.ts||0)-(b.ts||0))}
+  try{localStorage.removeItem("undertow.inbox")}catch(e){}
+  return inbox.length}
+function inboxCount(){try{return (JSON.parse(localStorage.getItem("undertow.inbox"))||[]).length}catch(e){return 0}}
+/* ---- ui/render.js ---- */
+/* Re-render hook.
+
+   Almost everything in the app finishes an action with render(). The function
+   that actually redraws the page (renderApp in main.js) has to reference every
+   view, so the views cannot import it back without a cycle. They import this
+   one-line indirection instead; main.js registers the real one at startup. */
+
+let dispatch=()=>{};
+function setDispatch(fn){dispatch=fn}
+function render(){dispatch()}
+/* ---- ui/nav.js ---- */
+/* Tab list, the nav bar, and which tab is showing.
+   `tab` is module state: read it directly (ES live binding), write it with setTab(). */
+const CORE=new Set(["start","ins","dec","love","emo","orient","results","method"]);
+const TABS=[
+ {id:"start",n:"Start"},{id:"ins",n:"Insecurities",qs:QI},{id:"dec",n:"Deception",qs:QD},{id:"love",n:"Love",qs:QL},
+ {id:"emo",n:"Emotion",qs:QE},{id:"orient",n:"Orientation",qs:QO},{id:"disp",n:"Disputes",qs:QG.concat(QGT)},{id:"scr",n:"Screens",sq:1},{id:"val",n:"Validity",qs:QV.concat(QX)},{id:"self",n:"Self-view",qs:QS},{id:"told",n:"Told by others"},
+ {sep:1},{id:"msgs",n:"Messages"},{id:"log",n:"Incident log"},{id:"notes",n:"Notes"},{sep:1},{id:"results",n:"Results"},{id:"compare",n:"Compare raters"},{id:"plan",n:"Change plan"},{id:"method",n:"Method"}
+];
+let tab=location.hash.slice(1)||"start";(function(){try{if((JSON.parse(localStorage.getItem("undertow.inbox"))||[]).length){DB.adv=true;tab="msgs"}}catch(e){}})();
+function setTab(t){tab=t}
+
+function renderNav(){
+  const adv=!!DB.adv;
+  $("#nav").innerHTML=TABS.filter(t=>adv||(t.sep?false:CORE.has(t.id))).map(t=>{if(t.sep)return `<span class="sep"></span>`;
+    let p="",done=false;
+    if(t.qs){p=`<span class="n">${answered(t.qs)}/${t.qs.length}</span>`;done=answered(t.qs)===t.qs.length}
+    if(t.sq){p=`<span class="n">${scrN()}/${SCR_TOTAL}</span>`;done=scrN()===SCR_TOTAL}
+    if(t.id==="log")p=`<span class="n">${S().log.length}</span>`;
+    if(t.id==="msgs"&&inboxCount())p=`<span class="n" style="color:#35e3ff">+${inboxCount()}</span>`;
+    return `<button data-t="${t.id}" class="${tab===t.id?"on":""} ${done?"done":""}">${t.n}${p}</button>`}).join("")+`<span class="sep"></span><button onclick="toggleAdv()" title="${adv?"hide observers, validity, screens, disputes, messages, log, notes, compare, plan":"show observers, validity, screens, disputes, messages, incident log, notes, compare raters, change plan"}">${adv?"◧ simple":"◨ advanced"}</button>`;
+  $("#nav").querySelectorAll("button[data-t]").forEach(b=>b.onclick=()=>go(b.dataset.t));
+}
+function go(t){tab=t;location.hash=t;render()}
+// was an inline onclick on the simple/advanced button; a named function so it
+// reaches the module-scoped `tab` instead of creating a global.
+function toggleAdv(){DB.adv=!DB.adv;save();if(!DB.adv&&!CORE.has(tab))tab="start";render()}
+
+function nextTab(){const i=TABS.findIndex(t=>t.id===tab);let j=i+1;while(TABS[j]&&(TABS[j].sep||(!DB.adv&&!CORE.has(TABS[j].id))))j++;return TABS[j]?TABS[j].id:"results"}
+function footer(){return `<div class="foot noprint"><span class="tiny">saves automatically · <kbd>T</kbd> / <kbd>F</kbd> answer the next unanswered statement</span><button class="primary" onclick="go('${nextTab()}')">Next →</button></div>`}
+/* ---- ui/header.js ---- */
+/* The sticky header: subject / rater selectors and the buttons beside them. */
+function renderHeader(){$("#advHdr").style.display=DB.adv?"":"none";
+  $("#subjSel").innerHTML=Object.keys(DB.subjects).map(n=>`<option ${n===DB.cur.s?"selected":""}>${esc(n)}</option>`).join("");
+  $("#raterSel").innerHTML=Object.entries(S().raters).map(([id,r])=>`<option value="${esc(id)}" ${id===DB.cur.r?"selected":""}>${esc(r.label)}${r.kind==="observer"?" (observer)":""}</option>`).join("");
+}
+
+/* ---------- header controls ---------- */
+$("#subjSel").onchange=e=>{DB.cur.s=e.target.value;DB.cur.r="self";save();render()};
+$("#raterSel").onchange=e=>{DB.cur.r=e.target.value;save();render()};
+$("#newSubj").onclick=()=>{const n=prompt("Subject name (the person being profiled):");if(!n)return;if(!DB.subjects[n])DB.subjects[n]=newSubject();DB.cur={s:n,r:"self"};save();setTab("start");render()};
+$("#newRater").onclick=()=>{const n=prompt(`Observer name (someone answering about ${DB.cur.s}):`);if(!n)return;const id="obs_"+n.replace(/\W+/g,"_").toLowerCase();if(!S().raters[id])S().raters[id]={label:n,kind:"observer",a:{},told:{},turned:{},snapshots:[]};DB.cur.r=id;save();setTab("start");render()};
+$("#delRater").onclick=()=>{if(DB.cur.r==="self"){if(Object.keys(DB.subjects).length<2){alert("Can't delete the only subject's self rater.");return}if(!confirm(`Delete subject "${DB.cur.s}" entirely (all raters, log, notes)?`))return;delete DB.subjects[DB.cur.s];DB.cur={s:Object.keys(DB.subjects)[0],r:"self"}}
+  else{if(!confirm(`Delete observer "${R().label}" and their answers?`))return;delete S().raters[DB.cur.r];DB.cur.r="self"}save();render()};
+/* ---- data/schema.js ---- */
+/* Label tables: schemas, deception methods, contexts, love languages, emotions, modes. */
+
+/* ============================================================
+   MODELS (Method tab has the full account and formulas)
+   ============================================================ */
+const SCHEMA = {
+  AB:{n:"Abandonment / Instability",d:"Expectation that people who matter will leave, withdraw, or prove unreliable. Shows as monitoring, testing, pre-emptive distance."},
+  MA:{n:"Mistrust / Abuse",d:"Expectation that others will hurt, use, or humiliate you. Shows as suspicion of kindness and reading motives into neutral acts."},
+  ED:{n:"Emotional Deprivation",d:"Expectation that your needs for care and understanding won't be met. Shows as not asking, not expecting, handling everything alone."},
+  DS:{n:"Defectiveness / Shame",d:"Belief that you are flawed and would be rejected if truly seen. Shows as hiding, self-deprecation, replaying exposures."},
+  FA:{n:"Failure",d:"Belief that you are or will be inadequate relative to peers. Shows as flaw-hunting, steering to safe ground, over-defending."},
+  SB:{n:"Subjugation",d:"Surrendering your preferences to avoid anger or abandonment. Shows as 'whatever you want' and retracting stated wants."},
+  SS:{n:"Self-Sacrifice / Burden",d:"Meeting others' needs at your own expense; feeling like too much. Shows as not asking for help, over-apologizing, hiding bad days."},
+  US:{n:"Unrelenting Standards",d:"Nothing is good enough; rest is not earned. Shows as rejecting praise, keeping going past done."},
+  AS:{n:"Approval / Recognition Seeking",d:"Worth is measured by others' regard and comparison. Shows as appearance checks, status stings, monitoring response."},
+  VH:{n:"Vulnerability / Need for Control",d:"Catastrophe is near unless you steer. Shows as needing consultation, plans, control of outcomes."}
+};
+const DEC = {
+  CON:{n:"Concealment (omission)",d:"Leaving out what would change the picture. Technically no lie."},
+  FAL:{n:"Falsification",d:"Inventing or improving: fake conflicts, better versions, 'I was sick'."},
+  EQV:{n:"Equivocation (vagueness)",d:"Answers that can't be pinned: 'it's going', 'we'll see', 'maybe later'."},
+  MIN:{n:"Minimization",d:"True but shrunk: 'basically done', 'a bit', 'nothing much'."},
+  RAT:{n:"Rationalization",d:"A more reasonable story than what happened, mostly told to yourself."},
+  PRJ:{n:"Projection / Blame-shift",d:"Redirecting responsibility onto what others did."},
+  DEN:{n:"Denial / feigned indifference",d:"'I'm fine', 'I don't care', 'why would I be upset'."},
+  DFL:{n:"Deflection (humor / redirect)",d:"Change the subject, turn the question around, make it a joke."},
+  CMP:{n:"False compliance",d:"Saying yes, 'it's good', 'they seem nice' when you mean no."},
+  IMP:{n:"Impression management",d:"Over-explaining and pre-justifying before anyone asks."}
+};
+const CTX = {partner:"Partner",family:"Family",work:"Work / authority",friends:"Friends",self:"Yourself (internal)",public:"Strangers / public"};
+const LOVE = {W:"Words of affirmation",T:"Quality time",A:"Acts of service",G:"Gifts",P:"Physical touch"};
+const EMO = {anger:"Anger",sadness:"Sadness",fear:"Fear",joy:"Joy",hurt:"Hurt / shame",affection:"Affection"};
+const MODE = {
+  direct:"expressed directly",suppress:"suppressed / denied",withdraw:"withdrawal (go quiet)",humor:"humor / joking",
+  anger:"converted to anger",tears:"converted to tears",displace:"displaced onto something else",somatic:"somatic (body)",
+  control:"converted to control / prep",worry:"converted to worry",shame:"converted to shame"
+};
+/* ---- util/voice.js ---- */
+/* Whose profile is this: observer vs self, and the second-person rewrite. */
+
+const isObs=()=>R().kind==="observer";
+const you=()=>isObs()?DB.cur.s:"you";
+
+// second-person rewrite for observer mode
+function ob(t){if(!isObs())return t;const n=DB.cur.s;
+  return t.replace(/\bYou're\b/g,n+" is").replace(/\byou're\b/g,n+" is").replace(/\bYou've\b/g,n+" has").replace(/\byou've\b/g,n+" has")
+   .replace(/\bYour\b/g,n+"'s").replace(/\byour\b/g,n+"'s").replace(/\bYou\b/g,n).replace(/\byou\b/g,n).replace(/\byourself\b/gi,"themselves").replace(/\bYOU\b/g,n.toUpperCase())}
+/* ---- ui/answer-ui.js ---- */
+/* The true/false row, the 4-point rows, and the keyboard shortcuts. */
+
+
+
+
+
+
+
+function tfRow(id,text,val,cls){return `<div class="tf ${cls||""}" data-tf="${id}"><span class="tft">${text}</span><span class="tfb"><button class="${val===1?"on t":""}" onclick="setTF('${id}',1)">True</button><button class="${val===0?"on f":""}" onclick="setTF('${id}',0)">False</button></span></div>`}
+function setTF(id,v){R().a[id]=v;save();renderNav();const row=document.querySelector(`[data-tf="${id}"]`);if(row){const b=row.querySelectorAll("button");b[0].className=v===1?"on t":"";b[1].className=v===0?"on f":""}
+  if(tab==="dec"&&isObs())render()}
+function likertBlock(id,text,labels,i){ // kept only for the two published screens (4-point)
+  const a=R().a[id];return `<div class="q" data-q="${id}"><div class="t"><b>${i+1}</b>${esc(text)}</div><div class="likert">
+   ${labels.map((l,j)=>`<label class="opt ${a===j?"on":""}"><input type="radio" name="${id}" ${a===j?"checked":""} onchange="setA('${id}',${j})"><span class="k">${j+1}</span>${l}</label>`).join("")}</div></div>`}
+function setA(id,j){R().a[id]=j;save();renderNav();const q=$(`[data-q="${id}"]`);if(!q)return;q.querySelectorAll(".opt").forEach((o,k)=>o.classList.toggle("on",k===j))}
+document.addEventListener("keydown",e=>{if(["TEXTAREA","INPUT","SELECT"].includes(e.target.tagName))return;
+  const k=e.key.toLowerCase();let v=null;if(k==="t"||k==="1"||k==="y")v=1;if(k==="f"||k==="2"||k==="n")v=0;if(v==null)return;
+  const row=[...document.querySelectorAll(".tf")].find(r=>!r.querySelector("button.on"));if(!row)return;setTF(row.dataset.tf,v);row.nextElementSibling?.scrollIntoView({behavior:"smooth",block:"center"})});
+
+function vQuestions(id,qs){
+  const obs=isObs(),r=R();
+  const html=qs.map((q,i)=>{
+    let turned="";
+    if(obs&&id==="dec"&&trues(r,q).some(j=>!q.o[j].honest)){const tv=r.turned[q.id]||"";
+      turned=`<div class="turned">Did it turn out otherwise (you saw both what was said and what was true)? ${["yes","no","unknown"].map(v=>`<button class="sm ${tv===v?"on":""}" onclick="setT('${q.id}','${v}')">${v}</button>`).join("")} <span class="tiny">only "yes" scores</span></div>`}
+    return `<div class="q">${q.c?`<span class="ctx">${CTX[q.c]}</span>`:""}${q.dir?`<span class="ctx">${q.dir}</span>`:""}
+    <div class="t"><b>${i+1}</b>${esc(ob(q.t))}</div>
+    ${q.o.map((o,j)=>tfRow(q.id+"_"+j,esc(ob(o.t)),opt(r,q,j),o.honest?"straight":"")).join("")}${turned}</div>`}).join("");
+  const intro={ins:"Each situation, then statements about what actually happens. Mark every statement that is true; more than one can be.",
+    dec:"Situations where a straight answer costs something. Mark true whatever has actually happened in that situation. The last statement in each is the straight answer."+(obs?" As an observer, after marking a non-straight statement true, say whether you later saw it turn out otherwise. If you only saw one half, leave the situation blank.":""),
+    love:"Mark true whatever is true. If several are, mark several; the counts are what's scored.",
+    emo:"What people actually see when each emotion is felt. Mark every statement that has been true more than once."}[id];
+  $("#main").innerHTML=`<div class="card"><p class="muted">${intro}</p>${obs?`<p class="tiny">answering as observer "${esc(R().label)}" about ${esc(DB.cur.s)}; statements are reworded in third person</p>`:""}<p class="tiny">keys: <kbd>T</kbd> / <kbd>F</kbd> answer the next unanswered statement</p>${html}${footer()}</div>`;
+}
+function setT(id,v){R().turned[id]=v;save();render()}
+/* ---- views/start.js ---- */
+/* Start tab. */
+
+
+
+
+
+function vStart(m){
+  const r=R(),tot=QI.length+QD.length+QL.length+QE.length+QS.length+QV.length+QX.length+SCR_TOTAL,done=answered(QI)+answered(QD)+answered(QL)+answered(QE)+answered(QS)+answered(QV)+answered(QX)+scrN();
+  if(!DB.adv){m.innerHTML=`<div class="card"><h2>What this does</h2>
+  <p>Situational questions about what you <em>actually do</em>, not what you think you're like. The answers are tallied against four models from psychology and the report shows the pattern with every answer that produced it listed underneath. Nothing is inferred beyond what you entered.</p>
+  <ul><li><b>Insecurities</b>: which of ten core schemas the evidence points to, as a probability.</li><li><b>Deception</b>: which methods you reach for, how often, in which settings.</li><li><b>Love language</b>: what you need to receive vs what you give.</li><li><b>Emotion</b>: for six emotions, whether they come out directly or as something else.</li><li><b>Orientation</b>: paired statements about acts, attraction, and label for each sex, and where they disagree.</li></ul>
+  <p>Every item is true or false. Each situation lists several things a person might do; mark true each one that has actually happened, not the ideal and not the exception. Leave a situation blank if it has never applied. About 25 minutes.</p>
+  <p class="tiny">progress ${answered(QI)+answered(QD)+answered(QL)+answered(QE)}/${QI.length+QD.length+QL.length+QE.length} · profile "${esc(DB.cur.s)}" · data stays in this browser · "advanced" in the menu adds observers, validity checks, message analysis, an incident log, screens, and a change plan</p>
+  <div class="row"><button class="primary" onclick="go('ins')">Start →</button><button onclick="if(confirm('Clear all answers?')){R().a={};R().told={};R().turned={};save();render()}" class="danger">Clear answers</button></div></div>`;return}
+  m.innerHTML=`<div class="card"><h2>What this does</h2>
+  <p>Situational questions about what a person <em>actually does</em>, scored against named models from psychology, with every conclusion tied to the answers that produced it. Version 2 adds the things that make it usable on someone without insight: <b>observers</b> who answer about the subject, <b>validity scales</b> that catch idealized answering, an <b>incident log</b> of real events, <b>screens</b> with published cutoffs, <b>snapshots</b> to measure change, and a <b>change plan</b> that assigns a two-week behavioral experiment per finding and tracks whether it was done.</p>
+  <h3>Roles</h3>
+  <ul><li><b>Subject</b>: the person being profiled. Each subject has one Self rater and any number of observers.</li>
+  <li><b>Self</b>: the subject answering about themselves.</li>
+  <li><b>Observer</b>: someone who knows the subject answering the same items about them. For deception items an observer also records whether it later <em>turned out otherwise</em>; only confirmed gaps score. Intent is never recorded.</li></ul>
+  <p>Currently answering as <span class="pill ${isObs()?"obs":"self"}">${esc(r.label)}</span> about <span class="pill">${esc(DB.cur.s)}</span>. Use the header to add a subject or an observer.</p>
+  <h3>Order of work</h3>
+  <ol><li>Questionnaire sections including Disputes (about 45 minutes; can be split).</li><li>Messages: load real exports or paste transcripts. This is the strongest evidence in the tool.</li><li>Validity section last, without looking back.</li><li>Told by others, Notes.</li><li>Results. Read the validity stamp before anything else.</li><li>Change plan: accept the assigned modules, check in daily, log incidents as they happen.</li><li>After two to four weeks: save a snapshot, redo the questionnaire, compare.</li></ol>
+  <p class="tiny">progress ${done}/${tot} for this rater · ${S().log.length} logged incidents · ${r.snapshots.length} snapshot${r.snapshots.length===1?"":"s"} · data stays in this browser</p>
+  <div class="row"><button class="primary" onclick="go('ins')">Start →</button>
+  <button onclick="exportJSON()">Export subject (JSON)</button><button onclick="importJSON()">Import</button>
+  <button onclick="if(confirm('Clear all answers for this rater? Log, notes and snapshots are kept.')){R().a={};R().told={};R().turned={};save();render()}" class="danger">Clear this rater's answers</button></div></div>`;
+}
+/* ---- views/screens.js ---- */
+/* Screens tab. */
+
+
+
+
+
+
+function vScreens(m){
+  m.innerHTML=`<div class="card"><h2>Screens</h2><p class="muted">Two public-domain clinical screens keep their published four-point format because their cutoffs depend on it. The attachment items are true/false. Screens are not diagnoses. ${isObs()?"As an observer, answer only what you have actually seen; skip the rest.":""}</p>
+  <h3>PHQ-9 · over the last two weeks, how often ${isObs()?"has "+esc(DB.cur.s)+" been":"have you been"} bothered by:</h3>${PHQ.map((t,i)=>likertBlock("P"+i,t,FREQ,i)).join("")}
+  <h3>GAD-7 · over the last two weeks:</h3>${GAD.map((t,i)=>likertBlock("G"+i,t,FREQ,i)).join("")}
+  <h3>Attachment (adapted two-dimension items)</h3>${ATT.map((it,i)=>tfRow("A"+i,esc(ob(it.t)),R().a["A"+i])).join("")}${footer()}</div>`}
+/* ---- scoring/orientation.js ---- */
+/* Kinsey-style position from the paired orientation items. */
+
+
+function scoreOrient(r){
+  const d={};for(const k in ODOM)d[k]={same:0,other:0,sameN:0,otherN:0};let n=0;
+  for(const q of QO){const a=r.a[q.id];if(a==null)continue;n++;d[q.k][q.side+"N"]++;if(a===1)d[q.k][q.side]++}
+  for(const k in d){const x=d[k];x.kin=(x.same+x.other)>0?6*x.same/(x.same+x.other):null;x.answered=x.sameN+x.otherN}
+  return {d,n};
+}
+const kinLabel=v=>v==null?"–":v.toFixed(1)+" · "+["exclusively other-sex","predominantly other-sex","other-sex more than incidentally same-sex","equally","same-sex more than incidentally other-sex","predominantly same-sex","exclusively same-sex"][Math.round(v)];
+/* ---- views/orient.js ---- */
+/* Orientation tab and its results card. */
+
+
+
+
+
+
+
+
+function vOrient(m){const r=R();
+  m.innerHTML=`<div class="card"><h2>Orientation</h2><p class="muted">Each statement is asked twice, once for the same sex and once for the other sex. True or false as it applies to ${you()}. Statements about acts are about what has happened, not what is wanted; the "ideal" pair covers what is wanted.</p>
+  ${OPAIRS.map((p,i)=>`<div class="q"><div class="t"><b>${i+1}</b><span class="ctx">${ODOM[p.k]}</span></div>${tfRow("OS"+i,esc(ob(QO[2*i].t)),r.a["OS"+i])}${tfRow("OO"+i,esc(ob(QO[2*i+1].t)),r.a["OO"+i])}</div>`).join("")}${footer()}</div>`}
+function renderOrientCard(r){
+  const O=scoreOrient(r);if(O.n<6)return "";
+  let h=`<div class="card"><h2>Orientation (paired statements)</h2><p class="muted">Each domain counts true statements for the same sex and for the other sex; the position is 6 × same ÷ (same + other) on the Kinsey scale, 0 = other sex only, 6 = same sex only. Orientation is self-defined; the table reports where each domain sits and where domains disagree.</p>
+  <table><tr><th>domain</th><th>same-sex true</th><th>other-sex true</th><th>position</th></tr>`;
+  for(const k in ODOM){const x=O.d[k];if(!x.answered)continue;h+=`<tr><td>${ODOM[k]}</td><td class="num">${x.same}/${x.sameN}</td><td class="num">${x.other}/${x.otherN}</td><td class="num">${k==="hide"||k==="sought"?"—":kinLabel(x.kin)}</td></tr>`}
+  h+=`</table>`;const f=[];const D=O.d;const gap=(a,b)=>(D[a].kin!=null&&D[b].kin!=null)?D[a].kin-D[b].kin:null;
+  const ab=gap("attr","beh");if(ab!=null&&Math.abs(ab)>=1.5)f.push(`Attraction (${D.attr.kin.toFixed(1)}) and behavior (${D.beh.kin.toFixed(1)}) differ by ${Math.abs(ab).toFixed(1)} points; ${ab>0?"attraction sits further toward same-sex than acts do":"acts sit further toward same-sex than attraction does"}.`);
+  const la=gap("label","attr");if(la!=null&&Math.abs(la)>=1.5)f.push(`Self-label (${D.label.kin.toFixed(1)}) and attraction (${D.attr.kin.toFixed(1)}) differ by ${Math.abs(la).toFixed(1)} points.`);
+  const ib=gap("ideal","beh");if(ib!=null&&Math.abs(ib)>=1.5)f.push(`Ideal (${D.ideal.kin.toFixed(1)}) and behavior (${D.beh.kin.toFixed(1)}) differ by ${Math.abs(ib).toFixed(1)} points.`);
+  const ea=gap("emo","attr");if(ea!=null&&Math.abs(ea)>=1.5)f.push(`Emotional (${D.emo.kin.toFixed(1)}) and attraction (${D.attr.kin.toFixed(1)}) differ by ${Math.abs(ea).toFixed(1)} points.`);
+  if(D.hide.same)f.push(`Concealment of same-sex attraction or contact: ${D.hide.same}/${D.hide.sameN} statements true.`);
+  if(D.hide.other)f.push(`Concealment of other-sex attraction or contact: ${D.hide.other}/${D.hide.otherN} statements true.`);
+  if(D.sought.same&&D.attr.kin!=null&&D.attr.kin>=2.5)f.push(`Same-sex contact only when offered, never sought, while attraction sits at ${D.attr.kin.toFixed(1)}.`);
+  if(D.sought.other&&D.attr.kin!=null&&D.attr.kin<=3.5)f.push(`Other-sex contact only when offered, never sought, while attraction sits at ${D.attr.kin.toFixed(1)}.`);
+  h+=f.length?`<h3>Gaps</h3>`+f.map(x=>`<div class="find">${x}</div>`).join(""):`<p class="muted">No domain differs from another by 1.5 points or more.</p>`;
+  return h+`<p class="tiny">${O.n} statements answered. Domains follow Klein, Sepekoff &amp; Wolf (1985); the scale follows Kinsey et al. (1948). Position is a ratio of true counts, so a domain with one true statement on each side reads as 3.0 regardless of how much contact there was.</p></div>`;
+}
+/* ---- views/disputes.js ---- */
+/* Disputes tab. */
+
+
+
+
+
+
+/* ---------- disputes as true/false ---------- */
+function vDisputes(m){const obs=isObs();
+  m.innerHTML=`<div class="card"><h2>Disputes</h2><p class="muted">True if the behavior has happened more than once in the last year. First set: what ${you()} do${obs?"es":""} to others. Second set: what is done to ${you()}. Frequency, not intent.</p>
+  <h3>${obs?esc(DB.cur.s)+" toward others":"You toward others"}</h3>${QG.map(q=>tfRow(q.id,esc(ob(q.t)),R().a[q.id])).join("")}
+  <h3>Others toward ${you()}</h3>${QGT.map(q=>tfRow(q.id,esc(ob(q.t)),R().a[q.id])).join("")}${footer()}</div>`}
+/* ---- data/lexicon.js ---- */
+/* Word lists used by the message analyser. */
+
+
+/* ============================================================
+   MESSAGE ANALYSIS: behavioral evidence from real message exports.
+   Parses Facebook JSON, Discord (DiscordChatExporter JSON/HTML), SMS CSV
+   (Android acquisition format), WhatsApp/plain text. Counts lexical
+   markers per category per contact, plus timing behaviors. Raw messages
+   never leave memory; only counts and a few example lines are stored.
+   ============================================================ */
+const LEX = {
+ // deception-adjacent linguistic markers (hedges, minimizers, denials, blame constructions, over-justification)
+ MIN:[/\b(i'?m|it'?s|its|im) (fine|ok|okay|good|alright)\b/,/\bnot (a )?big deal\b/,/\bnothing much\b/,/\bjust tired\b/,/\bit'?s nothing\b/,/\bbasically (done|finished)\b/,/\b(a (little )?bit|kinda|sorta|slightly)\b/,/\bno big\b/],
+ DEN:[/\bi don'?t (even )?care\b/,/\bdoesn'?t bother me\b/,/\bi'?m not (mad|upset|angry|bothered)\b/,/\bwhy would i be\b/,/\bwhatever\b/,/\bnot bothered\b/,/\bi'?m over it\b/],
+ EQV:[/\bwe'?ll see\b/,/\bidk\b/,/\bi guess\b/,/\bmaybe (later|sometime|another)\b/,/\bat some point\b/,/\bsomething came up\b/,/\bit'?s going\b/,/\bprobably\b/,/\bi might\b/,/\bwe should (hang|do something) sometime\b/,/\bcan'?t complain\b/],
+ DFL:[/\bwhat about you\b/,/\bwhy do you ask\b/,/\banyway+s?\b/,/\bmoving on\b/,/\bchange of subject\b/,/\bhow('?s| is) your\b/],
+ HUM:[/\blm+f?ao+\b/,/\blo+l\b/,/\bha(ha)+\b/,/\bjk\b/,/\bjust kidding\b/,/😂|🤣|💀/],
+ PRJ:[/\byou (always|never)\b/,/\byour fault\b/,/\bbecause (of )?you\b/,/\bif you (hadn'?t|had|would)\b/,/\byou made me\b/,/\byou started\b/,/\byou'?re the one\b/],
+ IMP:[/\bhonestly\b/,/\bto be (honest|fair)\b/,/\bi swear\b/,/\bi promise\b/,/\btrust me\b/,/\bbelieve me\b/,/\bliterally\b/,/\bthe (thing|reason) is\b/,/\bit'?s just that\b/,/\bi had to\b/,/\bi had no choice\b/],
+ CMP:[/\bok(ay)? fine\b/,/\bif you want\b/,/\bwhatever you want\b/,/\bup to you\b/,/\byou decide\b/,/\bsure,? (i guess|whatever|fine)\b/,/\bi don'?t mind\b/],
+ RAT:[/\bit'?s not like\b/,/\bat least\b/,/\banyone would\b/,/\bwasn'?t my\b/,/\bi only\b/,/\bin my defen[cs]e\b/,/\bto be fair\b/],
+ // schema markers
+ AB:[/\bare you (mad|upset|angry) at me\b/,/\bdid i do something\b/,/\byou (still )?there\??/,/\bhello\?+/,/\bare we (ok|okay|good)\b/,/\bdo you (still|even) (love|like|want) me\b/,/\bdon'?t leave\b/,/\bwhy (aren'?t|haven'?t) you (answer|repl|text)/,/\byou'?re ignoring me\b/],
+ DS:[/\bi'?m (so )?(stupid|dumb|an idiot|the worst|useless|pathetic)\b/,/\bmy fault\b/,/\bi ruin\b/,/\bsorry (for|i'?m) (being|existing)/,/\bhate myself\b/,/\bembarrass/],
+ SS:[/\bsorry to bother\b/,/\bno worries if not\b/,/\bif that'?s ok(ay)?\b/,/\bi don'?t want to be a (bother|burden|pain)\b/,/\bnever ?mind\b/,/\bforget it\b/,/\bit'?s ok(ay)? i'?ll\b/],
+ SB:[/\bwhatever you want\b/,/\byou (pick|choose|decide)\b/,/\bi'?m (fine|ok|good) with (whatever|anything)\b/,/\bdoesn'?t matter to me\b/],
+ VH:[/\byou (should|need to|have to)\b/,/\bmake sure (you|to)\b/,/\bdid you (remember|do|call|check)\b/,/\bwhy didn'?t you\b/,/\bwhat time\b/,/\bwhere are you\b/],
+ MA:[/\bwhat do you want\b/,/\bwhat'?s the catch\b/,/\bsure you (did|were|are)\b/,/\bi bet\b/,/\byeah right\b/,/\bwho (were|are) you with\b/,/\bprove it\b/],
+ US:[/\bnot good enough\b/,/\bshould have\b/,/\bi failed\b/,/\bi messed up\b/,/\bi screwed up\b/,/\bcould have done better\b/],
+ APOL:[/\b(i'?m )?sorry\b/,/\bmy bad\b/,/\bapologi[sz]e\b/],
+ // direct emotion statements
+ e_anger:[/\bi'?m (so |really |kinda )?(mad|angry|pissed|furious|annoyed|irritated)\b/,/\bthat (pisses|makes) me (off|mad|angry)\b/],
+ e_sadness:[/\bi'?m (so |really |kinda )?(sad|down|depressed|crying|heartbroken|miserable|low)\b/,/\bi (feel|felt) (so )?(sad|empty|down|low|alone|lonely)\b/,/\bi cried\b/],
+ e_fear:[/\bi'?m (so |really |kinda )?(scared|afraid|nervous|anxious|worried|terrified|freaking out)\b/,/\bi'?m (freaking|stressing) out\b/,/\bit scares me\b/],
+ e_joy:[/\bi'?m (so |really )?(happy|excited|thrilled|glad|proud)\b/,/\bi love (this|that|it)\b/,/\bbest (day|thing)\b/,/\bcan'?t wait\b/],
+ e_hurt:[/\bthat hurt\b/,/\bi'?m hurt\b/,/\byou hurt me\b/,/\bi feel (hurt|ashamed|embarrassed|humiliated)\b/,/\bthat was (mean|cruel|unfair)\b/],
+ e_affection:[/\bi love you\b/,/\bi miss you\b/,/\bi appreciate you\b/,/\bi'?m (so )?(grateful|lucky) (to have|for) you\b/,/\byou mean (so much|everything|a lot) to me\b/,/\bi care about you\b/],
+ // love language, giving side
+ gW:[/\byou'?re (amazing|beautiful|incredible|the best|so smart|so strong|wonderful)\b/,/\bproud of you\b/,/\bthank you\b/,/\bi appreciate\b/,/\bgood job\b/,/\bwell done\b/],
+ gT:[/\bcome over\b/,/\blet'?s (hang|do something|go|meet)\b/,/\bwanna (hang|come|do something|go)\b/,/\bmovie night\b/,/\bspend (time|the day)\b/],
+ gA:[/\bi'?ll (do|take care of|handle|fix|pick up|grab|bring|cook|make|drive)\b/,/\bi (fixed|cleaned|made|cooked|took care of)\b/,/\bi got you\b/,/\bleave it to me\b/,/\bdon'?t worry about it,? i\b/],
+ gG:[/\bgot you (something|a)\b/,/\bi bought you\b/,/\bpresent\b/,/\bgift\b/,/\bsurprise for you\b/],
+ gP:[/\bcuddle/,/\bhug/,/\bkiss/,/\bhold you\b/,/\bsnuggle/,/\bcome lay\b/,/\bxoxo\b/,/❤️|😘|🤗|🥰/]
+};
+const LEXN={MIN:"minimizing",DEN:"denial / not-caring",EQV:"vagueness / hedging",DFL:"deflection",HUM:"humor markers",PRJ:"blame constructions",IMP:"over-justification markers",CMP:"compliance / deferral",RAT:"rationalizing",
+ AB:"abandonment / pursuit",DS:"self-attack",SS:"burden / apology-hedging",SB:"subjugation",VH:"control / checking",MA:"suspicion",US:"self-standards",APOL:"apologies",
+ e_anger:"anger stated directly",e_sadness:"sadness stated directly",e_fear:"fear stated directly",e_joy:"joy stated directly",e_hurt:"hurt stated directly",e_affection:"affection stated directly",
+ gW:"gives words",gT:"gives time",gA:"gives acts",gG:"gives gifts",gP:"gives touch",NONANS:"non-answers to questions",BURST:"pursuit bursts (3+ unanswered in a row)",NIGHT:"messages 00:00–05:00"};
+const STOP=new Set("the and you your that this with what have from they were been will would could should about there their which when where just like dont don't didnt didn't have".split(" "));
+/* ---- messages/analyze.js ---- */
+/* Count lexicon hits per thread and per speaker. */
+
+
+
+/* ---------- analysis ---------- */
+function analyzeThread(msgs,subjectNames,ctx,contactLabel){
+  const isS=m=>subjectNames.includes(m.from);
+  const S=msgs.filter(isS),words=S.reduce((a,m)=>a+m.text.split(/\s+/).length,0);
+  const cnt={},ex={};for(const k in LEX){cnt[k]=0;ex[k]=[]}
+  cnt.NONANS=0;ex.NONANS=[];cnt.BURST=0;ex.BURST=[];cnt.NIGHT=0;
+  for(const m of S){const low=m.text.toLowerCase();
+    for(const k in LEX){if(LEX[k].some(re=>re.test(low))){cnt[k]++;if(ex[k].length<5)ex[k].push({ts:m.ts,text:m.text.slice(0,160)})}}
+    if(m.ts){const h=new Date(m.ts).getHours();if(h<5)cnt.NIGHT++}}
+  // non-answers and latency
+  const lat=[],latEmo=[];let run=0,runStart=null;
+  for(let i=0;i<msgs.length;i++){const m=msgs[i];
+    if(isS(m)){run++;if(run===1)runStart=m.ts;if(run===3&&runStart&&m.ts&&m.ts-runStart>=10*60000){cnt.BURST++;if(ex.BURST.length<5)ex.BURST.push({ts:m.ts,text:msgs.slice(i-2,i+1).map(x=>x.text.slice(0,50)).join(" / ")})}}
+    else{run=0;
+      if(/\?\s*$/.test(m.text.trim())){const nxt=msgs.slice(i+1,i+4).find(x=>isS(x));
+        if(nxt&&(!m.ts||!nxt.ts||nxt.ts-m.ts<12*3600000)){
+          const qw=new Set(m.text.toLowerCase().match(/[a-z']{4,}/g)||[]);const aw=nxt.text.toLowerCase().match(/[a-z']{4,}/g)||[];
+          const short=nxt.text.split(/\s+/).length<=5,overlap=aw.some(w=>qw.has(w)&&!STOP.has(w));
+          const stock=/^(idk|ok|okay|fine|nothing|whatever|lol|sure|yeah|yes|no|k|nah|meh|maybe|good|nm|not much)\b/i.test(nxt.text.trim());
+          if(stock||(short&&!overlap)){cnt.NONANS++;if(ex.NONANS.length<5)ex.NONANS.push({ts:nxt.ts,text:"Q: "+m.text.slice(0,70)+" → A: "+nxt.text.slice(0,70)})}}}
+      const nxt=msgs[i+1];if(nxt&&isS(nxt)&&m.ts&&nxt.ts&&nxt.ts>m.ts&&nxt.ts-m.ts<24*3600000){const mins=(nxt.ts-m.ts)/60000;lat.push(mins);
+        const emo=Object.keys(LEX).filter(k=>k.startsWith("e_")).some(k=>LEX[k].some(re=>re.test(m.text.toLowerCase())))||/\b(upset|hurt|mad|sad|scared|love|miss)\b/i.test(m.text);if(emo)latEmo.push(mins)}}}
+  const med=a=>{if(!a.length)return null;const s=a.slice().sort((x,y)=>x-y);return s[Math.floor(s.length/2)]};
+  const rate={};for(const k in cnt)rate[k]=S.length?cnt[k]/S.length*100:0;
+  const dates=msgs.map(m=>m.ts).filter(Boolean);
+  return {contact:contactLabel,ctx,nSubject:S.length,nTotal:msgs.length,words,cnt,rate,ex,latMed:med(lat),latEmoMed:med(latEmo),from:dates.length?Math.min(...dates):null,to:dates.length?Math.max(...dates):null};
+}
+/* ---- messages/parsers.js ---- */
+/* Turn exported chat logs (Discord, SMS, CSV, plain text) into messages. */
+
+/* ---------- parsers: return [{ts (ms), from, text}] ---------- */
+function fixFB(s){try{return decodeURIComponent(escape(s))}catch(e){return s}}
+function parseAny(name,text){
+  const t=text.trim();
+  if(t.startsWith("{")||t.startsWith("[")){let j;try{j=JSON.parse(t)}catch(e){return null}
+    if(j.messages&&j.participants)return j.messages.filter(m=>m.content).map(m=>({ts:m.timestamp_ms,from:fixFB(m.sender_name),text:fixFB(m.content)}));   // Facebook
+    if(j.messages&&j.messages[0]&&j.messages[0].author)return j.messages.filter(m=>m.content).map(m=>({ts:Date.parse(m.timestamp),from:m.author.nickname||m.author.name,text:m.content})); // DiscordChatExporter JSON
+    if(Array.isArray(j)&&j[0]&&(j[0].body||j[0].text))return j.map(m=>({ts:+m.date||Date.parse(m.date),from:m.from||m.sender||m.address,text:m.body||m.text}));
+    return null}
+  if(/<html|<!doctype|<div|<table/i.test(t.slice(0,500))){const d=parseDiscordHTML(t);if(d.length>=2)return d;const tb=parseTableHTML(t);if(tb&&tb.length>3)return tb;const st=parseText(htmlToText(t));return st}
+  if(/^﻿?"?_id"?,|^"?address"?,|,"?body"?/i.test(t.split("\n")[0])||/^[^\n]*\b(sender|from|author|body|text|message)\b/i.test(t.split("\n")[0]))return parseCSV(t);
+  return parseText(t);
+}
+function parseDiscordHTML(html){
+  const doc=new DOMParser().parseFromString(html,"text/html");const out=[];
+  doc.querySelectorAll(".chatlog__message-group, .chatlog__message-container").forEach(g=>{
+    const author=g.querySelector(".chatlog__author")?.getAttribute("title")||g.querySelector(".chatlog__author")?.textContent?.trim();
+    g.querySelectorAll(".chatlog__message").forEach(m=>{
+      const a=m.querySelector(".chatlog__author")?.getAttribute("title")||m.querySelector(".chatlog__author")?.textContent?.trim()||author;
+      const tsEl=m.querySelector(".chatlog__timestamp");const tsTxt=tsEl?.getAttribute("title")||tsEl?.textContent||"";
+      const c=m.querySelector(".chatlog__content .chatlog__markdown-preserve, .chatlog__content")?.textContent?.trim();
+      if(c&&a)out.push({ts:Date.parse(tsTxt)||null,from:a,text:c})})});
+  if(!out.length)doc.querySelectorAll(".chatlog__message").forEach(m=>{const a=m.querySelector(".chatlog__author")?.textContent?.trim();const c=m.querySelector(".chatlog__content")?.textContent?.trim();if(a&&c)out.push({ts:null,from:a,text:c})});
+  // fill missing timestamps forward
+  let last=null;for(const m of out){if(m.ts)last=m.ts;else m.ts=last}
+  return out;
+}
+function htmlToText(html){const doc=new DOMParser().parseFromString(html,"text/html");doc.querySelectorAll("script,style").forEach(e=>e.remove());const nl=String.fromCharCode(10);doc.querySelectorAll("br").forEach(x=>x.replaceWith(nl));doc.querySelectorAll("div,p,li,tr,h1,h2,h3,h4,section,article").forEach(e=>{e.append(nl)});return doc.body?doc.body.textContent:""}
+function parseTableHTML(html){ // SMS Backup & Restore style and similar: rows with a date cell, a sender/number cell, a text cell
+  const doc=new DOMParser().parseFromString(html,"text/html");const rows=[...doc.querySelectorAll("tr")].map(tr=>[...tr.querySelectorAll("td,th")].map(td=>td.textContent.trim())).filter(r=>r.length>=3);
+  if(rows.length<4)return null;const head=rows[0].map(x=>x.toLowerCase());
+  const find=re=>head.findIndex(h=>re.test(h));let iDate=find(/date|time/),iAddr=find(/number|address|contact|phone/),iType=find(/^type$|direction|^sent$/),iFrom=find(/from|sender|name|author/),iBody=find(/body|text|message|content/);if(iFrom<0)iFrom=iAddr;
+  let start=1;if(iBody<0){ // no header: guess by content of first data rows
+    const sample=rows.slice(0,20);const score=j=>sample.reduce((a,r)=>a+(r[j]?r[j].length:0),0);
+    iBody=[...Array(rows[0].length).keys()].sort((a,b)=>score(b)-score(a))[0];iDate=rows[0].findIndex(c=>!isNaN(Date.parse(c)));iFrom=rows[0].findIndex((c,j)=>j!==iBody&&j!==iDate);start=0}
+  const out=[];for(const r of rows.slice(start)){const body=r[iBody];if(!body)continue;const ts=iDate>=0?(Date.parse(r[iDate])||null):null;const addr=iAddr>=0?r[iAddr]:null;const ty=iType>=0?r[iType]:(iFrom>=0?r[iFrom]:"");
+    const sent=/^(sent|out|outgoing|2)$/i.test(ty);const from=sent?"__SELF__":(iFrom>=0&&!/^(received|in|incoming|1)$/i.test(r[iFrom])?r[iFrom]:(addr||"?"));
+    out.push({ts,from,text:body,addr})}return out}
+function csvRows(t){const rows=[];let row=[],f="",q=false;for(let i=0;i<t.length;i++){const c=t[i];
+  if(q){if(c==='"'){if(t[i+1]==='"'){f+='"';i++}else q=false}else f+=c}
+  else if(c==='"')q=true;else if(c===","){row.push(f);f=""}else if(c==="\n"||c==="\r"){if(c==="\r"&&t[i+1]==="\n")i++;row.push(f);rows.push(row);row=[];f=""}else f+=c}
+  if(f||row.length){row.push(f);rows.push(row)}return rows.filter(r=>r.length>1)}
+function parseCSV(t){
+  const rows=csvRows(t.replace(/^﻿/,""));const h=rows[0].map(x=>x.trim().toLowerCase());
+  const col=re=>h.findIndex(x=>re.test(x));
+  const iBody=col(/^(body|text|message|content)$/),iFrom=col(/^(sender|from|author|name)$/),iAddr=col(/^(address|number|phone|contact)$/),iType=col(/^type$/),iDate=col(/^(date|timestamp|time|date_local)$/);
+  if(iBody<0)return null;const out=[];
+  for(const r of rows.slice(1)){const body=r[iBody];if(!body)continue;
+    let from;if(iType>=0&&iAddr>=0){from=r[iType]==="2"?"__SELF__":r[iAddr]}else from=iFrom>=0?r[iFrom]:(iAddr>=0?r[iAddr]:"?");
+    const d=iDate>=0?r[iDate]:"";const ts=/^\d{12,}$/.test(d)?+d:(Date.parse(d)||null);
+    out.push({ts,from,text:body,addr:iAddr>=0?r[iAddr]:null})}
+  return out;
+}
+function parseText(t){
+  const out=[];let last=null;
+  for(const line of t.split("\n")){
+    let m=line.match(/^\[?(\d{1,4}[\/.-]\d{1,2}[\/.-]\d{1,4}[, ]+\d{1,2}:\d{2}(?::\d{2})?(?:\s?[AP]M)?)\]?\s*[-–]?\s*([^:]{1,40}):\s(.*)$/i);
+    if(m){last={ts:Date.parse(m[1].replace(",",""))||null,from:m[2].trim(),text:m[3]};out.push(last);continue}
+    m=line.match(/^([^:]{1,40}):\s(.+)$/);
+    if(m&&!/^https?/.test(m[1])){last={ts:null,from:m[1].trim(),text:m[2]};out.push(last);continue}
+    if(last&&line.trim())last.text+="\n"+line}
+  return out.length>3?out:null;
+}
+/* ---- scoring/gaslighting.js ---- */
+/* Bands the gaslighting markers, from answers and from messages. */
+
+function glBand(rate,types,n){ // rate per 100 msgs, distinct types with ≥2 hits, n msgs
+  if(n<50)return {b:"insufficient",t:"fewer than 50 messages from this speaker"};
+  if(rate<0.3)return {b:"none observed",t:"below 0.3 per 100 messages"};
+  if(rate<1)return {b:"isolated",t:"under 1 per 100 messages"};
+  if(rate<2.5||types<2)return {b:"recurrent",t:rate<2.5?"1–2.5 per 100 messages":"2.5+ per 100 but a single marker type"};
+  return {b:"pervasive",t:"2.5+ per 100 messages across 2+ marker types"};
+}
+function glMessages(msgs,subjectNames){ // both directions
+  const isS=m=>subjectNames.includes(m.from);
+  const dir={out:{n:0,cnt:{},ex:{}},in:{n:0,cnt:{},ex:{}}};
+  for(const m of msgs){const d=isS(m)?dir.out:dir.in;d.n++;const low=m.text.toLowerCase();
+    for(const k in LEXGL){if(LEXGL[k].some(re=>re.test(low))){d.cnt[k]=(d.cnt[k]||0)+1;(d.ex[k]=d.ex[k]||[]);if(d.ex[k].length<4)d.ex[k].push({ts:m.ts,from:m.from,text:m.text.slice(0,160)})}}}
+  for(const k of ["out","in"]){const d=dir[k];d.total=Object.values(d.cnt).reduce((a,b)=>a+b,0);d.rate=d.n?d.total/d.n*100:0;d.types=Object.values(d.cnt).filter(v=>v>=2).length;d.band=glBand(d.rate,d.types,d.n)}
+  return dir;
+}
+
+function scoreGL(r){
+  const actor={},target={};let aN=0,aS=0,tN=0,tS=0;
+  for(const q of QG){const a=r.a[q.id];if(a==null)continue;aN++;if(a===1){aS++;actor[q.g]=1}}
+  for(const q of QGT){const a=r.a[q.id];if(a==null)continue;tN++;if(a===1){tS++;target[q.g]=1}}
+  const band=(s,n)=>n<4?"insufficient":s===0?"none reported":s===1?"isolated":s<=3?"recurrent":"pervasive";
+  return {actorMean:aN?aS/aN:null,actorN:aN,actorTrue:aS,actorBand:band(aS,aN),actorTypes:actor,targetMean:tN?tS/tN:null,targetN:tN,targetTrue:tS,targetBand:band(tS,tN),targetTypes:target};
+}
+/* ---- data/told.js ---- */
+/* "Things people have said to you" checklist. */
+
+/* ---------- TOLD BY OTHERS ---------- */
+const TOLD = [
+ {t:"\"You're clingy\" / \"needy\"",s:{AB:.9}},
+ {t:"\"You always need reassurance\"",s:{AB:.6,AS:.6}},
+ {t:"\"You don't trust anyone\" / \"you assume the worst\"",s:{MA:.9}},
+ {t:"\"You never let anyone help you\"",s:{SS:.7,ED:.6}},
+ {t:"\"You're too hard on yourself\"",s:{US:.7,DS:.5}},
+ {t:"\"You're too sensitive\"",s:{DS:.8}},
+ {t:"\"You have to control everything\"",s:{VH:.9}},
+ {t:"\"You're a doormat\" / \"you never say what you want\"",s:{SB:.9}},
+ {t:"\"You care too much what people think\"",s:{AS:.9}},
+ {t:"\"You always think you're not good enough\"",s:{FA:.9}},
+ {t:"\"You do everything for people but won't take anything back\"",s:{SS:.9},g:"A"},
+ {t:"\"You never tell me anything\"",d:"CON"},
+ {t:"\"Everything's a joke with you\"",d:"DFL",mo:"humor"},
+ {t:"\"You always have an excuse\"",d:"RAT",d2:"IMP"},
+ {t:"\"You act like you don't care\"",d:"DEN",mo:"suppress"},
+ {t:"\"It's always someone else's fault\"",d:"PRJ"},
+ {t:"\"You say yes and then don't do it\"",d:"CMP",d2:"EQV"},
+ {t:"\"You make things sound better than they are\"",d:"FAL"},
+ {t:"\"You always downplay things\"",d:"MIN"},
+ {t:"\"You never bring things up until you explode\"",d:"CON",mo:"displace"},
+ {t:"\"You're hard to read\"",mo:"suppress"},
+ {t:"\"You shut down\" / \"you go quiet when you're upset\"",mo:"withdraw"},
+ {t:"\"You get angry when you're really scared or sad\"",mo:"anger"},
+ {t:"\"You get sick when you're stressed\"",mo:"somatic"},
+ {t:"\"You never say how you feel about me\"",mo:"suppress",g:"W"},
+ {t:"\"You're never really here\"",g:"T"},
+ {t:"\"You don't touch me / you're not affectionate\"",g:"P"}
+];
+/* ---- scoring/math.js ---- */
+/* Shared maths: the logistic prior used by the trait scores. */
+
+/* ============================================================ SCORING */
+const sig=x=>1/(1+Math.exp(-x)), logit=p=>Math.log(p/(1-p));
+const PRIOR=0.25, DISCONF=-0.35;
+
+function attachStyle(anx,avo){if(anx==null||avo==null)return null;const ha=anx>=4,hv=avo>=4;return ha?(hv?"fearful-avoidant (high anxiety, high avoidance)":"anxious-preoccupied (high anxiety, low avoidance)"):(hv?"dismissive-avoidant (low anxiety, high avoidance)":"secure (low anxiety, low avoidance)")}
+/* ---- scoring/traits.js ---- */
+/* Scores the true/false banks: insecurity, deception, love, emotion, validity, screens. */
+
+
+
+
+
+
+
+
+
+/* ---------- scoring on true/false ---------- */
+function scoreInsecurity(r){
+  const s={};for(const k in SCHEMA)s[k]={llr:0,n:0,ev:[]};
+  for(const q of QI){if(!touched(r,q))continue;const hit=new Set();
+    for(const j of trues(r,q)){const o=q.o[j];for(const k in o.w){s[k].llr+=o.w[k];s[k].n++;hit.add(k);s[k].ev.push({q:q.t,o:o.t,w:o.w[k],src:"answer"})}}
+    for(const k of q.tests){if(!hit.has(k)){s[k].llr+=DISCONF;s[k].n++}}}
+  TOLD.forEach((t,i)=>{if(!r.told[i]||!t.s)return;for(const k in t.s){s[k].llr+=t.s[k];s[k].n++;s[k].ev.push({q:"Told by others",o:t.t,w:t.s[k],src:"others"})}});
+  for(const k in s)s[k].post=sig(logit(PRIOR)+s[k].llr);
+  return s;
+}
+function scoreDeception(r){
+  const m={};for(const k in DEC)m[k]={n:0,ctx:{},ev:[]};
+  const ctx={};for(const c in CTX)ctx[c]={total:0,honest:0,unverified:0,methods:{}};
+  let total=0,honest=0,unverified=0;const obs=r.kind==="observer";
+  for(const q of QD){if(!touched(r,q))continue;const T=trues(r,q);const meth=T.filter(j=>!q.o[j].honest);
+    if(!meth.length){if(T.length){total++;honest++;ctx[q.c].total++;ctx[q.c].honest++}continue} // straight only
+    if(obs&&r.turned[q.id]!=="yes"){unverified++;ctx[q.c].unverified++;continue}
+    total++;ctx[q.c].total++;
+    for(const j of meth){const o=q.o[j];o.m.forEach((k,i)=>{const w=i?0.5:1;m[k].n+=w;m[k].ctx[q.c]=(m[k].ctx[q.c]||0)+w;ctx[q.c].methods[k]=(ctx[q.c].methods[k]||0)+w;m[k].ev.push({q:q.t,o:o.t,c:q.c,w,src:"answer"})})}}
+  TOLD.forEach((t,i)=>{if(!r.told[i])return;[t.d,t.d2].filter(Boolean).forEach((k,j)=>{const w=j?.5:1;m[k].n+=w;m[k].ev.push({q:"Told by others",o:t.t,w,src:"others"})})});
+  const tot=Object.values(m).reduce((a,b)=>a+b.n,0);let H=0;for(const k in m){const pk=m[k].n/(tot||1);if(pk>0)H-=pk*Math.log2(pk)}
+  const rates=Object.values(ctx).filter(c=>c.total>=2).map(c=>c.honest/c.total);const mean=rates.reduce((a,b)=>a+b,0)/(rates.length||1);
+  const varc=rates.reduce((a,b)=>a+(b-mean)**2,0)/(rates.length||1);const sc=ctx.self;
+  return {m,ctx,total,honest,unverified,H,Hmax:Math.log2(Object.keys(DEC).length),sd:Math.sqrt(varc),selfDeception:sc.total?1-sc.honest/sc.total:null,otherDeception:(total-sc.total)?1-(honest-sc.honest)/(total-sc.total):null};
+}
+function scoreLove(r){
+  const rc={},g={},d={};for(const k in LOVE){rc[k]=0;g[k]=0;d[k]=0}let nr=0,ng=0;
+  for(const q of QL){for(const j of trues(r,q)){const l=q.o[j].l;if(!l)continue;if(q.dir==="receive"){rc[l]++;nr++}else if(q.dir==="give"){g[l]++;ng++}else d[l]++}}
+  TOLD.forEach((t,i)=>{if(r.told[i]&&t.g)d[t.g]++});
+  const rv=Object.values(rc),gv=Object.values(g);const dot=rv.reduce((a,b,i)=>a+b*gv[i],0),n1=Math.hypot(...rv),n2=Math.hypot(...gv);
+  return {r:rc,g,d,nr,ng,cos:(n1&&n2)?dot/(n1*n2):null,hhi:nr?rv.reduce((a,b)=>a+(b/nr)**2,0):null};
+}
+function scoreEmotion(r){
+  const e={};for(const k in EMO)e[k]={n:0,modes:{},ev:[]};
+  for(const q of QE){for(const j of trues(r,q)){const mo=q.o[j].mo;e[q.e].n++;e[q.e].modes[mo]=(e[q.e].modes[mo]||0)+1;e[q.e].ev.push({q:q.t,o:q.o[j].t,mo,src:"answer"})}}
+  const told={};TOLD.forEach((t,i)=>{if(r.told[i]&&t.mo)told[t.mo]=(told[t.mo]||0)+1});
+  let N=0,D=0,Su=0;const modeTot={};for(const k in e){N+=e[k].n;D+=e[k].modes.direct||0;Su+=(e[k].modes.suppress||0)+(e[k].modes.withdraw||0);for(const mo in e[k].modes)modeTot[mo]=(modeTot[mo]||0)+e[k].modes[mo]}
+  return {e,told,N,modeTot,directRate:N?D/N:null,suppressRate:N?Su/N:null};
+}
+function acquiescence(r){let t=0,n=0;for(const k in r.a){if(/_\d+$/.test(k)||/^(V|S|T|A|G)\d/.test(k)&&(r.a[k]===0||r.a[k]===1)){if(r.a[k]===1)t++;if(r.a[k]===0||r.a[k]===1)n++}}return {t,n,rate:n?t/n:null}}
+function scoreValidity(r){
+  let lie=0,lieN=0;for(const q of QV){const a=r.a[q.id];if(a==null)continue;lieN++;if(a===1)lie++}
+  let inc=0,incN=0;const incItems=[];
+  for(const x of QX){const o=[QI,QD,QE].flat().find(q=>q.id===x.of);if(!o||!touched(r,x)||!touched(r,o))continue;incN++;
+    let bad=false;x.o.forEach((xo,j)=>{const a=opt(r,x,j),b=opt(r,o,xo.map);if(a!=null&&b!=null&&a!==b)bad=true});if(bad){inc++;incItems.push(x.of)}}
+  const D=scoreDeception(r);const straight=D.total?D.honest/D.total:null;const AQ=acquiescence(r);
+  let verdict="valid",reasons=[];
+  if(lieN>=6&&lie>=6){verdict="invalid";reasons.push(`lie scale ${lie}/${lieN}: endorsed virtues almost nobody can truthfully claim`)}
+  else if(lieN>=4&&lie>=4){verdict="questionable";reasons.push(`lie scale ${lie}/${lieN}`)}
+  if(incN>=4&&inc>=3){verdict="invalid";reasons.push(`inconsistency ${inc}/${incN}: the same situation got different answers when reworded`)}
+  else if(incN>=3&&inc>=2){if(verdict==="valid")verdict="questionable";reasons.push(`inconsistency ${inc}/${incN}`)}
+  if(straight!=null&&D.total>=12&&straight>=0.85&&lie>=3){if(verdict==="valid")verdict="questionable";reasons.push(`straight answers ${Math.round(straight*100)}% with elevated lie scale: looks idealized`)}
+  if(AQ.n>=60&&(AQ.rate>=0.75||AQ.rate<=0.06)){if(verdict==="valid")verdict="questionable";reasons.push(AQ.rate>=0.75?`true on ${Math.round(AQ.rate*100)}% of statements: yes-saying`:`true on ${Math.round(AQ.rate*100)}% of statements: nay-saying`)}
+  return {lie,lieN,inc,incN,incItems,straight,verdict,reasons,aq:AQ};
+}
+function scoreScreens(r){
+  const phq=PHQ.map((_,i)=>r.a["P"+i]).filter(x=>x!=null),gad=GAD.map((_,i)=>r.a["G"+i]).filter(x=>x!=null);
+  const ps=phq.reduce((a,b)=>a+b,0),gs=gad.reduce((a,b)=>a+b,0);
+  const anx=[],avo=[];ATT.forEach((it,i)=>{const a=r.a["A"+i];if(a==null)return;let v=a===1?6:2;if(it.r)v=8-v;(it.d==="anx"?anx:avo).push(v)});
+  const mean=x=>x.length?x.reduce((a,b)=>a+b,0)/x.length:null;
+  return {phqN:phq.length,phq:ps,phqBand:ps<5?"minimal":ps<10?"mild":ps<15?"moderate":ps<20?"moderately severe":"severe",phq9:r.a["P8"],gadN:gad.length,gad:gs,gadBand:gs<5?"minimal":gs<10?"mild":gs<15?"moderate":"severe",anx:mean(anx),avo:mean(avo),anxN:anx.length,avoN:avo.length};
+}
+/* ---- views/messages.js ---- */
+/* Messages tab: load files, pick the subject's sender, run the analysis. */
+
+
+
+
+function vMsgs(m){
+  const sub=S();const an=sub.msg||[];
+  const got=drainInbox();
+  const files=Object.keys(MSG_RAW);
+  let h=`<div class="card"><h2>Message analysis</h2><p class="muted">Load real message exports. The app counts the phrases the models care about ("I'm fine", "idk", "you always", "honestly", "sorry to bother", "I love you"), non-answers to direct questions, unanswered pursuit bursts, reply latency, and late-night messaging, per contact. This is behavior with no recall step. Raw text stays in memory for this session; only counts and up to five example lines per category are saved.</p>
+  ${got?`<p class="tiny" style="color:#35e3ff">${got} thread${got===1?"":"s"} received from Verbatim / Kindling and loaded below (raw text stays in memory for this session).</p>`:""}<p class="tiny">formats: Facebook message_1.json · Discord (DiscordChatExporter) .json or .html · Android SMS csv (address, date, type, body) · WhatsApp / "Name: text" .txt · or paste below</p>
+  <div class="row"><input type="file" id="msgFiles" multiple accept=".json,.html,.htm,.csv,.txt"><button onclick="loadMsgFiles()">Load files</button></div>
+  <textarea id="msgPaste" placeholder="or paste a conversation here (Name: message per line)"></textarea><div class="row"><input type="text" id="pasteName" placeholder="label for pasted thread"><button onclick="loadPaste()">Load pasted</button></div></div>`;
+  if(Object.keys(MSG_DIAG).length){h+=`<div class="card"><h3>Files loaded</h3><table><tr><th>file</th><th>bytes</th><th>messages parsed</th><th>with timestamps</th><th>senders</th><th>first 200 chars (letters and digits masked)</th></tr>${Object.entries(MSG_DIAG).map(([f,d])=>`<tr><td>${esc(f)}</td><td class="num">${d.bytes}</td><td class="num" style="${d.parsed?"":"color:var(--neon)"}">${d.parsed}</td><td class="num">${d.withTs}</td><td class="num">${d.senders}</td><td class="tiny">${esc(d.head)}</td></tr>`).join("")}</table><p class="tiny">a file with 0 parsed messages or 1 sender was not understood; copy this table (no content in it) into the chat and the parser can be adjusted. Files without timestamps still count words and markers but not latency, bursts, or night share.</p></div>`}
+  if(files.length){
+    const senders={};for(const f of files)for(const x of MSG_RAW[f])senders[x.from]=(senders[x.from]||0)+1;
+    const sn=Object.entries(senders).sort((a,b)=>b[1]-a[1]);
+    const chosen=sub.msgSelf||[];
+    h+=`<div class="card"><h3>1 · Which sender is ${esc(DB.cur.s)}?</h3><p class="muted">Tick every name or number that is the subject (SMS exports use __SELF__ for sent messages).</p><div class="chk">${sn.slice(0,40).map(([n,c])=>`<label class="opt ${chosen.includes(n)?"on":""}"><input type="checkbox" ${chosen.includes(n)?"checked":""} onchange="toggleSelf('${esc(n).replace(/'/g,"\\'")}',this.checked)">${esc(n)} <span class="tiny">${c}</span></label>`).join("")}</div>
+    <h3>2 · Context for each thread</h3><table><tr><th>file</th><th>messages</th><th>other senders</th><th>context</th></tr>
+    ${files.map(f=>{const others=[...new Set(MSG_RAW[f].map(x=>x.from).filter(n=>!chosen.includes(n)))];const cx=(sub.msgCtx||{})[f]||"";
+      return `<tr><td>${esc(f)}</td><td class="num">${MSG_RAW[f].length}</td><td>${esc(others.slice(0,4).join(", "))}${others.length>4?" +"+(others.length-4):""}</td><td><select onchange="setMsgCtx('${esc(f).replace(/'/g,"\\'")}',this.value)"><option value="">skip</option>${Object.entries(CTX).filter(([k])=>k!=="self").map(([k,v])=>`<option value="${k}" ${cx===k?"selected":""}>${v}</option>`).join("")}</select></td></tr>`}).join("")}</table>
+    <div class="row" style="margin-top:10px"><button class="primary" onclick="runMsgAnalysis()">3 · Analyze</button><span class="tiny">threads with a context and at least 20 subject messages are analyzed; SMS files are split per number</span></div></div>`}
+  if(an.length)h+=renderMsgResults(an,true);
+  m.innerHTML=h;
+}
+function toggleSelf(n,on){const s=S();s.msgSelf=s.msgSelf||[];if(on){if(!s.msgSelf.includes(n))s.msgSelf.push(n)}else s.msgSelf=s.msgSelf.filter(x=>x!==n);save();render()}
+function setMsgCtx(f,v){const s=S();s.msgCtx=s.msgCtx||{};s.msgCtx[f]=v;save()}
+function loadMsgFiles(){const inp=$("#msgFiles");if(!inp.files.length)return;let left=inp.files.length;
+  for(const f of inp.files){const rd=new FileReader();rd.onload=()=>{const p=parseAny(f.name,rd.result);
+    MSG_DIAG[f.name]={bytes:rd.result.length,parsed:p?p.length:0,withTs:p?p.filter(x=>x.ts).length:0,senders:p?new Set(p.map(x=>x.from)).size:0,head:rd.result.slice(0,200).replace(/[A-Za-z]/g,"x").replace(/d/g,"9")};
+    if(p&&p.length){ // split SMS-style files per address
+      if(p[0].addr!==undefined){const by={};for(const x of p){const k=x.from==="__SELF__"?x.addr:x.from;(by[k]=by[k]||[]).push(x)}for(const k in by)if(by[k].length>=10)MSG_RAW[f.name+" · "+k]=by[k].sort((a,b)=>(a.ts||0)-(b.ts||0))}
+      else MSG_RAW[f.name]=p.sort((a,b)=>(a.ts||0)-(b.ts||0))}
+    else console.warn("unparsed",f.name);
+    if(--left===0)render()};rd.readAsText(f)}}
+function loadPaste(){const t=$("#msgPaste").value;if(!t.trim())return;const p=parseText(t);if(!p){alert("Couldn't parse. Use 'Name: message' per line.");return}MSG_RAW[$("#pasteName").value||("pasted "+(Object.keys(MSG_RAW).length+1))]=p;render()}
+function runMsgAnalysis(){const s=S();const self=s.msgSelf||[];if(!self.length){alert("Tick which sender is the subject first.");return}
+  const out=[];for(const f in MSG_RAW){const cx=(s.msgCtx||{})[f];if(!cx)continue;const a=analyzeThread(MSG_RAW[f],self,cx,f);if(a.nSubject>=20)out.push(a)}
+  if(!out.length){alert("No thread had a context set and 20+ subject messages.");return}
+  s.msg=out;s.msgGL=out.map(a=>Object.assign(glMessages(MSG_RAW[a.contact],self),{contact:a.contact,ctx:a.ctx}));s.msgTs=Date.now();save();render()}
+function renderMsgResults(an,full){
+  const cats=["MIN","DEN","EQV","DFL","HUM","PRJ","IMP","CMP","RAT","NONANS","BURST","AB","DS","SS","SB","VH","MA","US","APOL","NIGHT"];
+  const emos=["e_anger","e_sadness","e_fear","e_joy","e_hurt","e_affection"],gives=["gW","gT","gA","gG","gP"];
+  // pool by context
+  const byCtx={};for(const a of an){const c=byCtx[a.ctx]=byCtx[a.ctx]||{n:0,cnt:{},threads:[]};c.n+=a.nSubject;c.threads.push(a);for(const k in a.cnt)c.cnt[k]=(c.cnt[k]||0)+a.cnt[k]}
+  const ctxs=Object.keys(byCtx);const rate=(c,k)=>byCtx[c].n?byCtx[c].cnt[k]/byCtx[c].n*100:0;
+  const tot=an.reduce((x,a)=>x+a.nSubject,0);
+  let h=`<div class="card"><h2>Message evidence</h2><p class="muted">${an.length} thread${an.length===1?"":"s"}, ${tot} messages from ${esc(DB.cur.s)}, rates per 100 of their messages. The highest context per row is marked. A row is only meaningful when the count is at least 5.</p>
+  <table><tr><th>marker</th>${ctxs.map(c=>`<th>${CTX[c]}<br><span class="tiny">n=${byCtx[c].n}</span></th>`).join("")}</tr>`;
+  const rowsOf=list=>list.map(k=>{const vals=ctxs.map(c=>rate(c,k));const mx=Math.max(...vals);const total=ctxs.reduce((x,c)=>x+(byCtx[c].cnt[k]||0),0);if(!total)return "";
+    return `<tr><td>${LEXN[k]}</td>${ctxs.map((c,i)=>`<td class="num" style="${vals[i]===mx&&mx>0&&ctxs.length>1?"color:var(--warn)":""}">${vals[i].toFixed(1)} <span class="tiny">(${byCtx[c].cnt[k]||0})</span></td>`).join("")}</tr>`}).join("");
+  h+=`<tr><th colspan="${ctxs.length+1}">deception-adjacent language and behavior</th></tr>${rowsOf(cats.slice(0,11))}<tr><th colspan="${ctxs.length+1}">schema markers</th></tr>${rowsOf(cats.slice(11))}<tr><th colspan="${ctxs.length+1}">emotion stated directly</th></tr>${rowsOf(emos)}<tr><th colspan="${ctxs.length+1}">love language given</th></tr>${rowsOf(gives)}</table>`;
+  // latency
+  h+=`<h3>Timing</h3><table><tr><th>thread</th><th>context</th><th>subject msgs</th><th>median reply (min)</th><th>reply to emotional msgs</th><th>span</th></tr>${an.map(a=>`<tr><td>${esc(a.contact)}</td><td>${CTX[a.ctx]}</td><td class="num">${a.nSubject}</td><td class="num">${a.latMed==null?"–":a.latMed.toFixed(0)}</td><td class="num">${a.latEmoMed==null?"–":a.latEmoMed.toFixed(0)}</td><td class="tiny">${a.from?new Date(a.from).toLocaleDateString()+" – "+new Date(a.to).toLocaleDateString():"no timestamps"}</td></tr>`).join("")}</table><p class="muted">A higher value in the second column is the timing form of withdrawal as defined in the emotion section.</p>`;
+  // findings
+  const findings=[];
+  const evasive=ctxs.map(c=>[c,rate(c,"MIN")+rate(c,"DEN")+rate(c,"EQV")+rate(c,"NONANS")]).sort((a,b)=>b[1]-a[1]);
+  if(evasive.length>1&&evasive[0][1]>0)findings.push(`Evasive language (minimizing + denial + vagueness + non-answers) is highest with <b>${CTX[evasive[0][0]]}</b> at ${evasive[0][1].toFixed(1)} per 100 messages, vs ${evasive[evasive.length-1][1].toFixed(1)} with ${CTX[evasive[evasive.length-1][0]]}.`);
+  const emoTot=emos.map(k=>[k,ctxs.reduce((x,c)=>x+(byCtx[c].cnt[k]||0),0)]).sort((a,b)=>b[1]-a[1]);
+  const said=emoTot.filter(x=>x[1]>0),unsaid=emoTot.filter(x=>x[1]===0);
+  if(said.length)findings.push(`Emotions stated directly in text: ${said.map(x=>LEXN[x[0]].replace(" stated directly","")+" ("+x[1]+")").join(", ")}.${unsaid.length?" Never stated directly in "+tot+" messages: <b>"+unsaid.map(x=>LEXN[x[0]].replace(" stated directly","")).join(", ")+"</b>.":""}`);
+  const hum=ctxs.reduce((x,c)=>x+(byCtx[c].cnt.HUM||0),0),emoAll=said.reduce((x,y)=>x+y[1],0);
+  if(hum>=10&&emoAll>0&&hum/emoAll>=5)findings.push(`Humor markers outnumber direct emotion statements ${hum} to ${emoAll}. A ratio above 5 is used here as the threshold for humor as the dominant register.`);
+  const gTot=gives.map(k=>[k,ctxs.reduce((x,c)=>x+(byCtx[c].cnt[k]||0),0)]).sort((a,b)=>b[1]-a[1]);
+  if(gTot[0][1]>=5)findings.push(`Love language given in text, by count: ${gTot.filter(x=>x[1]).map(x=>LEXN[x[0]].replace("gives ","")+" ("+x[1]+")").join(", ")}.`);
+  const burst=ctxs.reduce((x,c)=>x+(byCtx[c].cnt.BURST||0),0),ab=ctxs.reduce((x,c)=>x+(byCtx[c].cnt.AB||0),0);
+  if(burst+ab>=5)findings.push(`${burst} pursuit bursts and ${ab} reassurance-seeking phrases: behavioral evidence for the Abandonment schema.`);
+  const night=ctxs.reduce((x,c)=>x+(byCtx[c].cnt.NIGHT||0),0);if(tot&&night/tot>=0.15)findings.push(`${Math.round(night/tot*100)}% of messages sent between midnight and 5am.`);
+  // cross-check with questionnaire (self rater)
+  const selfR=S().raters.self;if(answered(QD,selfR)>=12){const D=scoreDeception(selfR);const qLeast=Object.entries(D.ctx).filter(([k,c])=>c.total>=2&&k!=="self").sort((a,b)=>(a[1].honest/a[1].total)-(b[1].honest/b[1].total))[0];
+    if(qLeast&&evasive.length>1&&qLeast[0]!==evasive[0][0]&&byCtx[qLeast[0]])findings.push(`<b>Cross-check:</b> the questionnaire says least straight with ${CTX[qLeast[0]]}; the messages put evasive language highest with ${CTX[evasive[0][0]]}. The two sources disagree; the message data has no recall step.`)}
+  if(findings.length)h+=`<h3>Findings</h3>`+findings.map(f=>`<div class="find">${f}</div>`).join("");
+  if(full){h+=`<h3>Examples</h3><p class="tiny">up to five per marker per thread · click ➕ to copy a line into the incident log</p>`;
+    for(const a of an){const keys=Object.keys(a.ex).filter(k=>a.ex[k].length&&a.cnt[k]>=3);if(!keys.length)continue;h+=`<p><span class="pill">${esc(a.contact)}</span> <span class="pill">${CTX[a.ctx]}</span></p>`;
+      for(const k of keys)h+=`<div class="ev"><b>${LEXN[k]}</b> ×${a.cnt[k]}${a.ex[k].map(e=>`<br><span class="src">${e.ts?new Date(e.ts).toLocaleDateString():""}</span> ${esc(e.text)} <button class="sm" title="add to incident log" onclick="msgToLog('${a.ctx}','${k}','${esc(e.text).replace(/'/g,"\\'").replace(/\n/g," ")}','${e.ts||""}')">➕</button>`).join("")}</div>`}}
+  h+=`<p class="tiny">analyzed ${S().msgTs?new Date(S().msgTs).toLocaleString():""} · lexicon counts are approximate; a marker is evidence of a habit only in aggregate, never from one line</p></div>`;
+  return h;
+}
+function msgToLog(ctx,k,text,ts){const method=DEC[k]?k:(k==="NONANS"?"EQV":k==="HUM"?"DFL":"");const emo=k.startsWith("e_")?k.slice(2):"";
+  S().log.push({id:Date.now(),date:ts?new Date(+ts).toISOString().slice(0,10):new Date().toISOString().slice(0,10),ctx,method,what:"From messages: "+LEXN[k],said:text,true:"",emo,mode:emo?"direct":"",schema:SCHEMA[k]?k:"",by:DB.cur.r,byLabel:R().label+" (messages)"});save();alert("Added to incident log.")}
+/* ---- views/validity.js ---- */
+/* Validity tab. */
+
+
+function vValidity(m){m.innerHTML=`<div class="card"><h2>Validity</h2><p class="muted">Two checks. First, statements about virtues; true or false as they apply to ${you()}. Second, situations you've seen before, worded differently; answer without looking back. The report is stamped valid, questionable, or invalid from these before any trait is shown.</p>
+  <h3>Statements</h3>${QV.map((q,i)=>tfRow(q.id,esc(ob(q.t)),R().a[q.id])).join("")}
+  <h3>Situations</h3>${QX.map((q,i)=>`<div class="q"><div class="t"><b>${i+1}</b>${esc(ob(q.t))}</div>${q.o.map((o,j)=>tfRow(q.id+"_"+j,esc(ob(o.t)),opt(R(),q,j))).join("")}</div>`).join("")}${footer()}</div>`}
+/* ---- views/self.js ---- */
+/* Self-view tab. */
+
+
+
+
+
+
+function vSelf(m){m.innerHTML=`<div class="card"><p class="muted">${isObs()?"How "+esc(DB.cur.s)+" would describe themselves, as far as you know.":"How you'd describe yourself to a friend. Compared against the behavioral answers to locate blind spots."}</p>
+  ${QS.map((q,i)=>tfRow(q.id,esc(ob(q.t)),R().a[q.id])).join("")}${footer()}</div>`}
+/* ---- views/told.js ---- */
+/* Told-by-others tab. */
+
+
+
+
+
+function vTold(m){m.innerHTML=`<div class="card"><h2>Things people have said to ${you()}</h2><p class="muted">Tick anything said more than once, by more than one person, or by someone who knows ${you()} well. Counted as external evidence and marked as such.</p>
+  <div class="chk">${TOLD.map((t,i)=>`<label class="opt ${R().told[i]?"on":""}"><input type="checkbox" ${R().told[i]?"checked":""} onchange="R().told[${i}]=this.checked;save();this.parentElement.classList.toggle('on',this.checked)">${esc(t.t)}</label>`).join("")}</div>${footer()}</div>`}
+/* ---- views/log.js ---- */
+/* Incident log tab. */
+
+
+
+
+
+/* ---------- INCIDENT LOG ---------- */
+function vLog(m){
+  const L=S().log.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  const sel=(id,opts,blank="—")=>`<select id="${id}"><option value="">${blank}</option>${Object.entries(opts).map(([k,v])=>`<option value="${k}">${esc(v.n||v)}</option>`).join("")}</select>`;
+  m.innerHTML=`<div class="card"><h2>Incident log</h2><p class="muted">Record real events as close to the moment as possible. This is the primary evidence; the questionnaire is the baseline. Each entry is coded with the same categories, and the report flags where the log contradicts the questionnaire. Recorded by whoever is selected as rater.</p>
+  <div class="grid3"><div><label class="f">date</label><input type="date" id="lgDate" value="${new Date().toISOString().slice(0,10)}"></div>
+  <div><label class="f">context</label>${sel("lgCtx",CTX)}</div>
+  <div><label class="f">what was said / done</label>${sel("lgM",Object.assign({straight:{n:"Straight answer"}},DEC))}</div></div>
+  <label class="f">what happened (the situation)</label><textarea id="lgWhat" placeholder="who, what was asked or at stake"></textarea>
+  <div class="grid2"><div><label class="f">what ${you()} said or did</label><textarea id="lgSaid"></textarea></div><div><label class="f">what was actually true (or 'not known')</label><textarea id="lgTrue"></textarea></div></div>
+  <div class="grid3"><div><label class="f">emotion visible</label>${sel("lgE",EMO)}</div><div><label class="f">how it came out</label>${sel("lgMo",MODE)}</div><div><label class="f">likely trigger (schema)</label>${sel("lgS",SCHEMA)}</div></div>
+  <div class="row" style="margin-top:10px"><button class="primary" onclick="addLog()">Add incident</button></div>
+  <h3>${L.length} incident${L.length===1?"":"s"}</h3>
+  ${L.map(e=>`<div class="note"><div class="h"><span class="tiny">${e.date}</span><span class="pill">${CTX[e.ctx]||"—"}</span><span class="pill">${e.method==="straight"?"straight":(DEC[e.method]?.n||"—")}</span>${e.emo?`<span class="pill">${EMO[e.emo]} · ${MODE[e.mode]||"?"}</span>`:""}${e.schema?`<span class="pill">${SCHEMA[e.schema].n}</span>`:""}<span class="pill ${e.by==="self"?"self":"obs"}">${esc(e.byLabel||e.by)}</span><span class="spacer"></span><button class="danger sm" onclick="delLog(${e.id})">×</button></div>
+   <div>${esc(e.what)}</div>${e.said?`<div class="ev"><b>said:</b> ${esc(e.said)}</div>`:""}${e.true?`<div class="ev"><b>true:</b> ${esc(e.true)}</div>`:""}</div>`).join("")}
+  </div>`;
+}
+function addLog(){const what=$("#lgWhat").value.trim();if(!what){alert("Describe what happened.");return}
+  S().log.push({id:Date.now(),date:$("#lgDate").value,ctx:$("#lgCtx").value,method:$("#lgM").value,what,said:$("#lgSaid").value.trim(),true:$("#lgTrue").value.trim(),emo:$("#lgE").value,mode:$("#lgMo").value,schema:$("#lgS").value,by:DB.cur.r,byLabel:R().label});save();render()}
+function delLog(id){S().log=S().log.filter(e=>e.id!==id);save();render()}
+/* ---- views/notes.js ---- */
+/* Notes tab. */
+
+function vNotes(m){const n=S().notes;
+  m.innerHTML=`<div class="card"><h2>Notes and known facts</h2><p class="muted">Anything the items didn't cover. Shown verbatim in results, never scored.</p>
+  <div class="row"><select id="noteDom"><option value="ins">Insecurity</option><option value="dec">Deception</option><option value="love">Love language</option><option value="emo">Emotion</option><option value="other">Other</option></select>
+  <input id="noteWho" type="text" placeholder="source (optional)" style="flex:1"></div><textarea id="noteTxt" placeholder="what was said or observed"></textarea>
+  <div class="row"><button class="primary" onclick="addNote()">Add note</button></div><h3>${n.length} note${n.length===1?"":"s"}</h3>
+  ${n.map((x,i)=>`<div class="note"><div class="h"><span class="pill">${x.dom}</span><span class="tiny">${esc(x.who||"")}</span><span class="pill">${esc(x.byLabel||"")}</span><span class="spacer"></span><button onclick="S().notes.splice(${i},1);save();render()" class="danger sm">×</button></div>${esc(x.txt)}</div>`).join("")}${footer()}</div>`}
+function addNote(){const txt=$("#noteTxt").value.trim();if(!txt)return;S().notes.push({dom:$("#noteDom").value,who:$("#noteWho").value.trim(),txt,ts:Date.now(),byLabel:R().label});save();render()}
+/* ---- scoring/log.js ---- */
+/* Scores the incident log and finds where it contradicts the questionnaire. */
+
+
+
+/* --- incident log scoring --- */
+function scoreLog(sub){
+  const m={},ctx={},sch={},emo={};let n=0,straight=0;
+  for(const c in CTX)ctx[c]={total:0,straight:0};
+  for(const e of sub.log){n++;if(e.ctx&&ctx[e.ctx])ctx[e.ctx].total++;
+    if(e.method==="straight"){straight++;if(e.ctx&&ctx[e.ctx])ctx[e.ctx].straight++}else if(e.method){m[e.method]=(m[e.method]||0)+1}
+    if(e.schema)sch[e.schema]=(sch[e.schema]||0)+1;
+    if(e.emo&&e.mode){emo[e.emo]=emo[e.emo]||{n:0,modes:{}};emo[e.emo].n++;emo[e.emo].modes[e.mode]=(emo[e.emo].modes[e.mode]||0)+1}}
+  return {n,straight,m,ctx,sch,emo};
+}
+function contradictions(r,sub){
+  const out=[];if(!sub.log.length)return out;
+  const L=scoreLog(sub),D=scoreDeception(r),I=scoreInsecurity(r),E=scoreEmotion(r);
+  for(const c in CTX){const q=D.ctx[c],l=L.ctx[c];if(q.total>=3&&l.total>=2){const qr=q.honest/q.total,lr=l.straight/l.total;
+    if(qr-lr>=0.4)out.push(`Questionnaire says ${Math.round(qr*100)}% straight with ${CTX[c].toLowerCase()}; the incident log shows ${l.straight}/${l.total}.`)}}
+  for(const k in L.m){if(L.m[k]>=2&&D.m[k].n<1)out.push(`${DEC[k].n} appears ${L.m[k]}× in the log but never in questionnaire answers.`)}
+  for(const k in L.sch){if(L.sch[k]>=2&&I[k].post<0.3)out.push(`${SCHEMA[k].n} was tagged as the trigger in ${L.sch[k]} logged incidents but scores only ${Math.round(I[k].post*100)}% on the questionnaire.`)}
+  for(const k in L.emo){const le=L.emo[k],qe=E.e[k];if(le.n>=2&&qe.n>=2){const lr=(le.modes.direct||0)/le.n,qr=(qe.modes.direct||0)/qe.n;if(qr-lr>=0.4)out.push(`${EMO[k]}: questionnaire says direct ${Math.round(qr*100)}% of the time; log shows ${le.modes.direct||0}/${le.n}.`)}}
+  return out;
+}
+/* ---- data/modules.js ---- */
+/* Change modules: the exercises the change plan draws from. */
+
+/* ---------- CHANGE MODULES (schema therapy behavioral experiments, CBT, DBT opposite action) ---------- */
+const MODULES = {
+ AB:{n:"Test the prediction",why:"Abandonment schema runs on a forecast (they're leaving) that is rarely checked against what happens.",do:"Once a day, when you'd normally check, re-message, or pull away first: write the prediction, do nothing for 24 hours, then write what actually happened.",check:"Did you write the prediction and wait instead of acting?"},
+ MA:{n:"Take it at face value",why:"Mistrust schema reads intent into neutral acts; the only corrective is counting how often the predicted catch arrives.",do:"Once a day accept a kindness or neutral act without looking for the angle. Note it. A week later, note whether the catch came.",check:"Did you take one thing at face value today?"},
+ ED:{n:"Ask out loud",why:"Emotional deprivation is maintained by never asking, so the belief that no one will show up is never tested.",do:"Once a day ask one person for one specific thing (attention, help, comfort). Record what they did.",check:"Did you ask for one thing out loud?"},
+ DS:{n:"Disclosure ladder",why:"Defectiveness/shame is maintained by hiding; every hidden thing confirms that exposure would be fatal.",do:"Tell one person one thing you'd normally hide, smallest first, moving up. Record their actual response, not the one you feared.",check:"Did you disclose one thing you'd normally hide?"},
+ FA:{n:"Ship at 80%",why:"Failure schema is protected by never finishing or never submitting, so the feared verdict never arrives and never gets disproved.",do:"Once a day hand in, send, or finish one thing before it feels ready. Record the outcome.",check:"Did you finish or send one thing before it felt ready?"},
+ SB:{n:"Preference count",why:"Subjugation is a habit of retraction; the fix is stated preferences that stay stated.",do:"Three times a day say what you want when asked (or unasked). Count retractions.",check:"How many preferences did you state and keep today?"},
+ SS:{n:"Accept help without apology",why:"Self-sacrifice keeps the ledger one-sided, which is how 'burden' stays true in your head.",do:"Once a day accept or ask for a favor and do not apologize for it. Record how the other person reacted.",check:"Did you accept help without apologizing?"},
+ US:{n:"Define done, then stop",why:"Unrelenting standards move the finish line while you run. Fixing the line before starting is the intervention.",do:"For one task a day write what 'done' means before you begin. Stop there. Record the urge to continue and whether anyone noticed.",check:"Did you stop at the pre-defined 'done'?"},
+ AS:{n:"Post and don't check",why:"Approval-seeking is fed by response monitoring; removing the check removes the reward loop.",do:"Do one visible thing a day (share, speak, post, wear) and do not check the response for 24 hours.",check:"Did you do one visible thing and not check?"},
+ VH:{n:"Leave one thing unplanned",why:"The control schema predicts catastrophe from unplanned events; count the catastrophes.",do:"Leave one thing a day unplanned or let someone else decide. Record what went wrong (usually nothing).",check:"Did you leave one thing unplanned today?"},
+ CON:{n:"Say the omitted thing",why:"Concealment feels costless because the cost is deferred. Paying it early is smaller.",do:"Once a day say one thing you'd have left out, within 24 hours of the moment you left it out.",check:"Did you say one thing you'd normally leave out?"},
+ FAL:{n:"Plain version",why:"Falsification is a reflex to improve the story. The plain story is nearly always survivable.",do:"When you notice the urge to improve a story or reason, give the plain one. Record the reaction.",check:"Did you give the plain version at least once?"},
+ EQV:{n:"Give the specific",why:"Vagueness buys time and costs trust. Specifics are what people remember you by.",do:"Replace one vague answer a day with a number, a date, or a yes/no.",check:"Did you replace one vague answer with a specific?"},
+ MIN:{n:"Say the real size",why:"Minimization stops others from responding at the right scale, then you feel unsupported.",do:"Once a day describe one thing at its actual size, not smaller.",check:"Did you say one thing at its real size?"},
+ RAT:{n:"Two columns",why:"Rationalization happens after the fact and in private. Writing it next to what happened breaks it.",do:"Each night write two columns: the story you told yourself / what actually happened.",check:"Did you write both columns tonight?"},
+ PRJ:{n:"My share first",why:"Blame-shifting starts with whose fault it was. Starting with your share changes the order.",do:"For any conflict, write your share before theirs. Say your share out loud first.",check:"Did you name your share first?"},
+ DEN:{n:"Name the actual state",why:"'I'm fine' is a door shut on the person asking. Naming the state is the smallest opening.",do:"Once a day, when 'fine' or 'nothing' comes up, replace it with the actual word (tired, hurt, annoyed, scared).",check:"Did you replace one 'fine' with the real word?"},
+ DFL:{n:"Answer the question first",why:"Deflection and humor keep you unreachable. The joke can follow; it just can't replace.",do:"Answer the question actually asked, then joke if you want. Once a day minimum.",check:"Did you answer the question asked before deflecting?"},
+ CMP:{n:"One honest no",why:"False compliance builds resentment that comes out sideways later.",do:"Say one honest no per day, without a fabricated reason.",check:"Did you say one honest no?"},
+ IMP:{n:"One sentence, then stop",why:"Over-explaining signals guilt and invites the reaction it tries to prevent.",do:"When you catch yourself justifying, stop after one sentence. Let the silence sit.",check:"Did you stop after one sentence at least once?"},
+ m_anger:{n:"Name what's underneath",why:"Anger that's really fear or sadness gets responded to as anger, and the real need goes unmet (Greenberg: secondary emotion).",do:"Before responding angrily, name the primary feeling out loud: 'I'm scared' / 'that hurt.' Once a day.",check:"Did you name the primary feeling before the anger?"},
+ m_suppress:{n:"Affect labeling",why:"Putting the emotion into a word reduces its intensity and makes it visible to others (Lieberman).",do:"Say the emotion word to one person a day: 'I'm sad about it', 'I'm nervous'.",check:"Did you say an emotion word to someone today?"},
+ m_withdraw:{n:"Stay ten minutes",why:"Withdrawal is the opposite action of what the situation needs; staying is the DBT opposite action.",do:"When the urge to leave or go silent hits, stay ten minutes and say one sentence about what you feel.",check:"Did you stay and say one sentence?"},
+ m_humor:{n:"Straight first, joke second",why:"Humor as a defense is mature but total; nobody can respond to what you've turned into a bit.",do:"Say it straight once, then joke if you like. Once a day.",check:"Did you say one feeling straight before the joke?"},
+ m_somatic:{n:"Body to word",why:"Somatic expression means the body carries what wasn't said. Naming the emotion at the symptom starts the transfer.",do:"When a stress symptom appears, ask 'what am I feeling?' and write the word.",check:"Did you name the feeling behind a symptom today?"},
+ m_displace:{n:"Right target",why:"Displacement moves the emotion to a safer target; the original relationship never gets the information.",do:"Once a day say the thing to the person it's actually about.",check:"Did you take it to the right person?"},
+ love:{n:"Give theirs, ask yours",why:"Mismatched languages mean both people give and neither feels received.",do:"One act a day in the other person's language. One direct request a week in your own.",check:"Did you give in their language today?"}
+};
+/* ---- ui/gl-card.js ---- */
+/* The gaslighting-marker card shown in Results. */
+
+function renderGLCard(r,sub){
+  const G=scoreGL(r);let h=`<div class="card"><h2>Gaslighting-pattern markers</h2><p class="muted">Seven behaviors from the research literature (Sweet 2019; Klein, Li &amp; Wood 2023; Abramson 2014; Stern 2007), counted as frequencies. Bands describe the density of markers in the evidence. They do not establish intent and do not label a person; the literature defines gaslighting by pattern, repetition, and effect on the target's confidence in their own perception, and only the first two are measurable here.</p>
+  <table><tr><th>direction</th><th>answered</th><th>true</th><th>marker types present</th><th>band</th></tr>
+  <tr><td>${esc(DB.cur.s)} toward others</td><td class="num">${G.actorN}/${QG.length}</td><td class="num">${G.actorTrue}</td><td>${Object.keys(G.actorTypes).map(k=>GL[k].n).join(", ")||"—"}</td><td><b>${G.actorBand}</b></td></tr>
+  <tr><td>Others toward ${esc(DB.cur.s)}</td><td class="num">${G.targetN}/${QGT.length}</td><td class="num">${G.targetTrue}</td><td>${Object.keys(G.targetTypes).map(k=>GL[k].n).join(", ")||"—"}</td><td><b>${G.targetBand}</b></td></tr></table>`;
+  if(sub.msgGL){h+=`<h3>From messages</h3><table><tr><th>thread</th><th>direction</th><th>msgs</th><th>markers</th><th>per 100</th><th>types</th><th>band</th></tr>`;
+    for(const t of sub.msgGL)for(const k of ["out","in"]){const d=t[k];h+=`<tr><td>${esc(t.contact)}</td><td>${k==="out"?esc(DB.cur.s)+" → "+CTX[t.ctx]:CTX[t.ctx]+" → "+esc(DB.cur.s)}</td><td class="num">${d.n}</td><td class="num">${d.total}</td><td class="num">${d.rate.toFixed(2)}</td><td>${Object.entries(d.cnt).filter(([,v])=>v>=2).map(([c])=>GL[c].n).join(", ")||"—"}</td><td><b>${d.band.b}</b> <span class="tiny">${d.band.t}</span></td></tr>`}
+    h+=`</table>`;
+    for(const t of sub.msgGL)for(const k of ["out","in"]){const d=t[k];const keys=Object.keys(d.ex).filter(c=>d.cnt[c]>=2);if(!keys.length)continue;
+      h+=`<p><span class="pill">${esc(t.contact)}</span> <span class="pill">${k==="out"?"from "+esc(DB.cur.s):"to "+esc(DB.cur.s)}</span></p>`;
+      for(const c of keys)h+=`<div class="ev"><b>${GL[c].n}</b> ×${d.cnt[c]}${d.ex[c].map(e=>`<br><span class="src">${e.ts?new Date(e.ts).toLocaleDateString():""} ${esc(e.from)}:</span> ${esc(e.text)}`).join("")}</div>`}}
+  const tb=G.targetBand,ab=G.actorBand;
+  if(tb==="recurrent"||tb==="pervasive")h+=`<div class="find warn">Target-side markers are ${tb}. The measurable effect in the literature is loss of confidence in one's own perception; item T2 and T3 are the direct indicators. This is the one finding in the report where the appropriate next step is outside the tool: a clinician or a domestic-abuse service can assess it properly.</div>`;
+  if(ab==="recurrent"||ab==="pervasive")h+=`<div class="find">Actor-side markers are ${ab}. The change module for this is 'Record, then reply': in a dispute about what happened, write both versions before responding. Listed under the plan.</div>`;
+  return h+`</div>`;
+}
+MODULES.GLA={n:"Record, then reply",why:"Disputes about what happened are where denial, memory-questioning and reframing occur. Writing both versions before replying removes the reflex.",do:"In any disagreement about what was said or done, write the other person's version and yours before answering. Reply to their version first.",check:"Did you write both versions before replying today (or no dispute occurred)?"};
+/* ---- ui/widgets.js ---- */
+/* Small render helpers: percentages, bars, evidence lists, snapshots. */
+
+
+/* ---------- RESULTS ---------- */
+const pct=x=>x==null?"–":Math.round(x*100)+"%";
+function bar(label,v,right,cls,mark){return `<div class="bar"><span>${label}</span><div class="tr"><div class="fl ${cls||""}" style="width:${Math.max(0,Math.min(100,v*100))}%"></div>${mark!=null?`<div class="mk" style="left:${Math.max(0,Math.min(100,mark*100))}%"></div>`:""}</div><span class="v">${right}</span></div>`}
+function evList(ev,max=6){return ev.slice(0,max).map(e=>`<div class="ev"><b>${esc(e.o)}</b> <span class="src">← ${esc(e.q)}${e.c?" · "+CTX[e.c]:""}${e.src==="others"?" · reported by others":""}</span></div>`).join("")}
+function lastSnap(r){return r.snapshots.length?r.snapshots[r.snapshots.length-1]:null}
+function snapRater(r,s){return {kind:r.kind,label:r.label,a:s.a,told:s.told,turned:s.turned||{}}}
+/* ---- views/results.js ---- */
+/* Results tab: the whole report. */
+
+
+
+
+
+
+
+
+
+
+
+function vResults(m){
+  const r=R(),sub=S();
+  const nAll=answered(QI)+answered(QD)+answered(QL)+answered(QE);
+  if(nAll<10&&!(sub.msg&&sub.msg.length)&&answered(QG,r)+answered(QGT,r)<4&&answered(QO,r)<4){m.innerHTML=`<div class="card"><h2>Not enough answers yet</h2><p class="muted">Answer at least ten items across the sections for this rater.</p></div>`;return}
+  const I=scoreInsecurity(r),D=scoreDeception(r),L=scoreLove(r),E=scoreEmotion(r),V=scoreValidity(r),SC=scoreScreens(r),LG=scoreLog(sub),CT=contradictions(r,sub);
+  const snap=lastSnap(r);const prev=snap?{I:scoreInsecurity(snapRater(r,snap)),D:scoreDeception(snapRater(r,snap)),E:scoreEmotion(snapRater(r,snap)),L:scoreLove(snapRater(r,snap))}:null;
+  let h=`<div class="card noprint"><div class="row"><button class="primary" onclick="window.print()">Print / save PDF</button><button onclick="copyReport()">Copy as text</button><button onclick="saveSnapshot()">Save snapshot</button><span class="tiny">subject ${esc(DB.cur.s)} · rater ${esc(r.label)}${isObs()?" (observer)":""} · ${new Date().toLocaleDateString()}</span></div></div>`;
+
+  /* validity */
+  h+=`<div class="card"><h2>Validity</h2><p><span class="stamp ${V.verdict==="valid"?"valid":V.verdict==="questionable"?"q":"invalid"}">${V.verdict.toUpperCase()}</span></p>
+  <table><tr><th>check</th><th>value</th><th>reading</th></tr>
+  <tr><td>Lie scale (implausible virtues endorsed)</td><td class="num">${V.lie}/${V.lieN}</td><td>${V.lieN<4?"not enough items answered":V.lie>=6?"idealized responding":V.lie>=4?"elevated":"normal range"}</td></tr>
+  <tr><td>Inconsistency (reworded items answered differently)</td><td class="num">${V.inc}/${V.incN}</td><td>${V.incN<3?"not enough pairs answered":V.inc>=3?"answers don't hold up under rewording":V.inc>=2?"some drift":"consistent"}${V.incItems.length?" · items "+V.incItems.join(", "):""}</td></tr>
+  <tr><td>Straight-answer rate on deception items</td><td class="num">${pct(V.straight)}</td><td>${V.straight==null?"—":V.straight>=0.85?"unusually high; DePaulo's diary data puts everyday deception well above this":V.straight<=0.15?"unusually low":"plausible range"}</td></tr>
+  <tr><td>Yes-saying (share of statements marked true)</td><td class="num">${V.aq.n?Math.round(V.aq.rate*100)+"%":"–"}</td><td>${V.aq.n<60?"not enough statements answered":V.aq.rate>=0.75?"acquiescent responding":V.aq.rate<=0.06?"nay-saying":"normal range"}</td></tr>
+  ${isObs()?`<tr><td>Observer: deception items skipped as unverified</td><td class="num">${D.unverified}</td><td>only confirmed gaps were scored</td></tr>`:""}</table>
+  ${V.verdict!=="valid"?`<div class="find ${V.verdict==="invalid"?"bad":"warn"}">${V.reasons.join(". ")}. ${V.verdict==="invalid"?"Trait results below are shown but should not be trusted. Redo the sections, or hand them to an observer.":"Read the trait results with that in mind; an observer's answers would settle it."}</div>`:`<p class="muted">${V.reasons.length?V.reasons.join(". ")+".":"Validity checks within range."}</p>`}
+  </div>`;
+
+  /* pattern */
+  const insRank=Object.entries(I).sort((a,b)=>b[1].post-a[1].post);
+  const decRank=Object.entries(D.m).sort((a,b)=>b[1].n-a[1].n);
+  const topIns=insRank[0],topDec=decRank[0];
+  const ctxRank=Object.entries(D.ctx).filter(([k,c])=>c.total>=2).sort((a,b)=>(a[1].honest/a[1].total)-(b[1].honest/b[1].total));
+  const leastHonest=ctxRank[0];
+  const emoRank=Object.entries(E.e).filter(([k,e])=>e.n>=2).map(([k,e])=>[k,(e.modes.direct||0)/e.n,e]).sort((a,b)=>a[1]-b[1]);
+  h+=`<div class="card"><h2>The pattern</h2>`;
+  if(topIns&&topIns[1].n>=3&&topIns[1].post>0.5)h+=`<div class="find">Strongest insecurity signal: <b>${SCHEMA[topIns[0]].n}</b> (${pct(topIns[1].post)} posterior from ${topIns[1].n} items). ${SCHEMA[topIns[0]].d}</div>`;
+  if(topDec&&topDec[1].n>=2)h+=`<div class="find">When a straight answer costs something ${isObs()?esc(DB.cur.s)+" was seen to reach for":"you most often reach for"} <b>${DEC[topDec[0]].n}</b>${leastHonest?`, least straight with <b>${CTX[leastHonest[0]]}</b> (${leastHonest[1].honest}/${leastHonest[1].total} straight)`:""}. Straight option in ${D.honest} of ${D.total} scored situations (${pct(D.honest/D.total)}).</div>`;
+  if(emoRank.length){const lo=emoRank[0],lomode=Object.entries(lo[2].modes).filter(([k])=>k!=="direct").sort((a,b)=>b[1]-a[1])[0];
+    h+=`<div class="find">The emotion least likely to come out as itself is <b>${EMO[lo[0]]}</b>: direct in ${lo[2].modes.direct||0} of ${lo[2].n} situations${lomode?`; it mostly shows up as <b>${MODE[lomode[0]]}</b>`:""}.</div>`}
+  if(L.cos!=null&&L.cos<0.5)h+=`<div class="find warn">Give and receive languages don't line up (similarity ${L.cos.toFixed(2)} on 0–1).</div>`;
+  if(CT.length)h+=`<div class="find bad"><b>Log contradicts questionnaire:</b><ul style="margin:4px 0 0 16px">${CT.map(c=>`<li>${c}</li>`).join("")}</ul></div>`;
+  if(topIns&&topDec&&topIns[1].n>=3&&topDec[1].n>=2)h+=`<p class="muted">Read together: the schema supplies the threat, the method is the reflex that manages it, the context is where the threat is most live. <b>${SCHEMA[topIns[0]].n}</b> → <b>${DEC[topDec[0]].n}</b>${leastHonest?` → <b>${CTX[leastHonest[0]]}</b>`:""}${emoRank.length?` → <b>${EMO[emoRank[0][0]]}</b> is the emotion with the lowest direct-expression rate`:""}.</p>`;
+  h+=`</div>`;
+
+  /* insecurities */
+  h+=`<div class="card"><h2>Insecurities (schema evidence)</h2><p class="muted">Posterior probability from a ${pct(PRIOR)} prior plus log-odds per answer. Over 50%: evidence favors it. Under 25%: answers argued against it. ${prev?"Pink marker = last snapshot.":""}</p>`;
+  for(const [k,s] of insRank)h+=bar(SCHEMA[k].n,s.post,`${pct(s.post)} · n=${s.n}${prev?` · Δ${((s.post-prev.I[k].post)*100).toFixed(0)}`:""}`,s.post>=.5?"":s.post<.25?"ok":"warn",prev?prev.I[k].post:null);
+  for(const [k,s] of insRank.slice(0,3)){if(s.post<0.4||!s.ev.length)continue;
+    h+=`<h3>${SCHEMA[k].n}</h3><p class="muted">${SCHEMA[k].d}</p>${evList(s.ev.sort((a,b)=>b.w-a.w))}${LG.sch[k]?`<div class="ev"><b>${LG.sch[k]} logged incident${LG.sch[k]>1?"s":""} tagged with this trigger</b></div>`:""}`}
+  h+=`</div>`;
+
+  /* deception */
+  h+=`<div class="card"><h2>Deception: methods and contexts</h2><p class="muted">Counts of scored situations per method (primary 1, secondary 0.5). Method entropy ${D.H.toFixed(2)} of ${D.Hmax.toFixed(2)} bits: ${D.H<1.8?"low, a few habitual moves":D.H<2.6?"moderate":"high, varies by situation"}. Intent is not measured; a method label records the shape of the gap between what was said and what was true.</p>`;
+  const maxn=Math.max(1,...decRank.map(x=>x[1].n));
+  for(const [k,s] of decRank)h+=bar(DEC[k].n,s.n/maxn,`${s.n}${LG.m[k]?` · log ${LG.m[k]}`:""}${prev?` · Δ${(s.n-prev.D.m[k].n).toFixed(1)}`:""}`,"",prev?prev.D.m[k].n/maxn:null);
+  h+=`<h3>By context</h3><table><tr><th>context</th><th>straight (questionnaire)</th><th>rate</th><th>straight (log)</th><th>dominant method</th></tr>`;
+  for(const c in CTX){const x=D.ctx[c];if(!x.total&&!LG.ctx[c].total)continue;const dm=Object.entries(x.methods).sort((a,b)=>b[1]-a[1])[0];
+    h+=`<tr><td>${CTX[c]}</td><td class="num">${x.honest}/${x.total}</td><td class="num">${x.total?pct(x.honest/x.total):"–"}</td><td class="num">${LG.ctx[c].total?LG.ctx[c].straight+"/"+LG.ctx[c].total:"–"}</td><td>${dm?DEC[dm[0]].n+" ("+dm[1]+")":"—"}</td></tr>`}
+  h+=`</table><p class="muted">Spread across contexts: SD ${D.sd.toFixed(2)} (${D.sd<0.15?"consistent across settings":D.sd<0.3?"context-dependent":"very different by setting"}). Self-deception ${pct(D.selfDeception)} vs other-directed ${pct(D.otherDeception)}${D.selfDeception!=null&&D.otherDeception!=null?(D.selfDeception>D.otherDeception+0.15?": lower straight rate on internal items than on interpersonal ones.":D.otherDeception>D.selfDeception+0.15?": higher straight rate on internal items than on interpersonal ones.":": roughly equal."):"."}</p>`;
+  for(const [k,s] of decRank.slice(0,3)){if(s.n<1.5)continue;const cs=Object.entries(s.ctx).sort((a,b)=>b[1]-a[1]).map(([c,n])=>`${CTX[c]} (${n})`).join(", ");
+    h+=`<h3>${DEC[k].n}</h3><p class="muted">${DEC[k].d}${cs?` Shows up with: ${cs}.`:""}</p>${evList(s.ev)}`}
+  h+=`</div>`;
+
+  /* love */
+  h+=`<div class="card"><h2>Love language</h2><div class="grid2"><div><h3>Needs to receive (n=${L.nr})</h3>`;
+  for(const k in LOVE)h+=bar(LOVE[k],L.nr?L.r[k]/L.nr:0,`${L.r[k]}`);
+  h+=`</div><div><h3>Gives (n=${L.ng})</h3>`;
+  for(const k in LOVE)h+=bar(LOVE[k],L.ng?L.g[k]/L.ng:0,`${L.g[k]}`,"ok");
+  h+=`</div></div>`;
+  const rTop=Object.entries(L.r).sort((a,b)=>b[1]-a[1])[0],gTop=Object.entries(L.g).sort((a,b)=>b[1]-a[1])[0];
+  const defs=Object.entries(L.d).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]);
+  h+=`<p class="muted">Give/receive cosine ${L.cos==null?"–":L.cos.toFixed(2)}. Concentration (Herfindahl, 0.2 flat → 1.0 single) ${L.hhi==null?"–":L.hhi.toFixed(2)}${L.hhi!=null?(L.hhi>=0.4?", a clear primary language.":L.hhi>=0.28?", a lead language with a second.":", spread out."):""}</p>`;
+  if(rTop&&gTop&&rTop[1]>0&&gTop[1]>0)h+=`<div class="find ${rTop[0]===gTop[0]?"ok":"warn"}">Most needs <b>${LOVE[rTop[0]]}</b>, most gives <b>${LOVE[gTop[0]]}</b>.${rTop[0]===gTop[0]?" Same language both directions.":" Others receive "+LOVE[gTop[0]].toLowerCase()+"; the questionnaire says "+LOVE[rTop[0]].toLowerCase()+" is what is needed."}</div>`;
+  if(defs.length)h+=`<div class="find">Reported as not given: <b>${defs.map(x=>LOVE[x[0]]).join(", ")}</b>.${L.r[defs[0][0]]>0?" "+LOVE[defs[0][0]]+" is also scored as needed; same language on both the need and the deficit side.":""}</div>`;
+  h+=`</div>`;
+
+  /* emotion */
+  h+=`<div class="card"><h2>Emotion: what comes out as itself</h2><p class="muted">Direct-expression rate ${pct(E.directRate)} (n=${E.N})${prev?` (was ${pct(prev.E.directRate)})`:""}; suppression + withdrawal ${pct(E.suppressRate)}.</p>
+  <table><tr><th>emotion</th><th>direct</th><th>rate</th><th>where the rest goes</th><th>log</th></tr>`;
+  for(const k in EMO){const e=E.e[k];if(!e.n)continue;const d=e.modes.direct||0;
+    const rest=Object.entries(e.modes).filter(([mo])=>mo!=="direct").sort((a,b)=>b[1]-a[1]).map(([mo,n])=>`${MODE[mo]} ×${n}`).join(", ");
+    const lg=LG.emo[k];h+=`<tr><td>${EMO[k]}</td><td class="num">${d}/${e.n}</td><td class="num">${pct(d/e.n)}</td><td>${rest||"—"}</td><td class="num">${lg?(lg.modes.direct||0)+"/"+lg.n+" direct":"–"}</td></tr>`}
+  h+=`</table>`;
+  const genuine=Object.entries(E.e).filter(([k,e])=>e.n>=2&&(e.modes.direct||0)/e.n>=0.5).map(([k])=>EMO[k]);
+  const masked=Object.entries(E.e).filter(([k,e])=>e.n>=2&&(e.modes.direct||0)/e.n<0.34).map(([k])=>EMO[k]);
+  if(genuine.length)h+=`<div class="find ok">Direct at least half the time: <b>${genuine.join(", ")}</b>.</div>`;
+  if(masked.length)h+=`<div class="find">Direct less than a third of the time: <b>${masked.join(", ")}</b>.</div>`;
+  const conv=[];for(const k in EMO){const e=E.e[k];for(const mo in e.modes){if(["anger","tears","worry","shame","control"].includes(mo))conv.push(`${EMO[k]} → ${MODE[mo].replace("converted to ","")} (${e.modes[mo]})`)}}
+  if(conv.length)h+=`<p class="muted">Conversions (primary shown as secondary): ${conv.join("; ")}.</p>`;
+  const toldM=Object.entries(E.told);if(toldM.length)h+=`<p class="muted">Others have named: ${toldM.map(([mo])=>MODE[mo]).join(", ")}.</p>`;
+  for(const k in EMO){const e=E.e[k];if(e.n<2||(e.modes.direct||0)/e.n>=0.5)continue;h+=`<h3>${EMO[k]}</h3>${evList(e.ev.filter(x=>x.mo!=="direct"))}`}
+  h+=`</div>`;
+
+  /* screens */
+  if(SC.phqN||SC.gadN||SC.anxN){h+=`<div class="card"><h2>Screens</h2><table><tr><th>measure</th><th>score</th><th>band</th><th>note</th></tr>`;
+    if(SC.phqN)h+=`<tr><td>PHQ-9 depression (${SC.phqN}/9 items)</td><td class="num">${SC.phq}</td><td>${SC.phqN===9?SC.phqBand:"incomplete"}</td><td>${SC.phq>=10?"10+ is the usual threshold for a clinician to assess further.":"below the usual referral threshold"}${SC.phq9>0?" <b style='color:#ff5f5f'>Item 9 (thoughts of being better off dead or self-harm) was endorsed. That item alone warrants talking to a professional or a crisis line now, regardless of the total.</b>":""}</td></tr>`;
+    if(SC.gadN)h+=`<tr><td>GAD-7 anxiety (${SC.gadN}/7 items)</td><td class="num">${SC.gad}</td><td>${SC.gadN===7?SC.gadBand:"incomplete"}</td><td>${SC.gad>=10?"10+ is the usual threshold for further assessment.":"below the usual referral threshold"}</td></tr>`;
+    if(SC.anxN)h+=`<tr><td>Attachment anxiety (1–7)</td><td class="num">${SC.anx.toFixed(2)}</td><td>${SC.anx>=4?"high":"low"}</td><td rowspan="2">${attachStyle(SC.anx,SC.avo)||""}. Attachment anxiety tracks the Abandonment schema; avoidance tracks Emotional Deprivation and suppression. Check they agree.</td></tr><tr><td>Attachment avoidance (1–7)</td><td class="num">${SC.avo.toFixed(2)}</td><td>${SC.avo>=4?"high":"low"}</td></tr>`;
+    h+=`</table><p class="tiny">PHQ-9 and GAD-7 are public domain (Pfizer). Attachment items are adapted from the two-dimension model behind the ECR, not the ECR itself; no published norms apply to them.</p></div>`}
+
+  /* orientation */
+  h+=renderOrientCard(r);
+  /* gaslighting */
+  if(answered(QG,r)+answered(QGT,r)>=4||sub.msgGL)h+=renderGLCard(r,sub);
+  /* message evidence */
+  if(sub.msg&&sub.msg.length)h+=renderMsgResults(sub.msg,false);
+  /* blind spots */
+  h+=`<div class="card"><h2>Blind spots: self-view vs behavior</h2><p class="muted">Each self-statement (true = 1, false = 0) against what the behavioral items measured. Gap over 0.3 marks a place where the self-description and the reported behavior disagree.</p><table><tr><th>statement</th><th>self</th><th>behavior</th><th>gap</th><th></th></tr>`;
+  const sv=id=>r.a[id]==null?null:r.a[id];
+  const rows=[["S1","Honest, don't really lie",D.total?D.honest/D.total:null],
+    ["S2","Few insecurities",(()=>{const v=Object.values(I).filter(s=>s.n>=2);return v.length?1-v.filter(s=>s.post>=.5).length/v.length:null})()],
+    ["S3","People always know how I feel",E.directRate],
+    ["S4","When angry, people know",E.e.anger.n?(E.e.anger.modes.direct||0)/E.e.anger.n:null],
+    ["S5","Know what makes me feel loved",L.hhi==null?null:Math.min(1,(L.hhi-0.2)/0.4)],
+    ["S6","Same person in every setting",D.total?Math.max(0,1-D.sd*2.5):null]];
+  for(const [id,lab,beh] of rows){const s=sv(id);if(s==null||beh==null)continue;const gap=s-beh;
+    h+=`<tr><td>${lab}</td><td class="num">${s.toFixed(2)}</td><td class="num">${beh.toFixed(2)}</td><td class="num">${gap>0?"+":""}${gap.toFixed(2)}</td><td>${Math.abs(gap)>0.3?(gap>0?"<span style='color:var(--warn)'>self-view higher than behavior</span>":"<span style='color:var(--acc)'>self-view lower than behavior</span>"):"<span class='tiny'>consistent</span>"}</td></tr>`}
+  h+=`</table></div>`;
+
+  /* change since snapshot */
+  if(prev){h+=`<div class="card"><h2>Change since snapshot (${new Date(snap.ts).toLocaleDateString()})</h2><p class="muted">Reliable change is flagged when a posterior moved 0.20 or more, or a rate moved 0.25 or more on at least 4 items. Smaller movements are within the noise of this instrument.</p><table><tr><th>measure</th><th>then</th><th>now</th><th>Δ</th><th></th></tr>`;
+    const rows2=[];
+    for(const k in SCHEMA)rows2.push([SCHEMA[k].n,prev.I[k].post,I[k].post,0.2]);
+    rows2.push(["Straight-answer rate",prev.D.total?prev.D.honest/prev.D.total:null,D.total?D.honest/D.total:null,0.25]);
+    rows2.push(["Direct emotional expression",prev.E.directRate,E.directRate,0.25]);
+    rows2.push(["Suppression + withdrawal",prev.E.suppressRate,E.suppressRate,0.25]);
+    rows2.push(["Give/receive similarity",prev.L.cos,L.cos,0.25]);
+    for(const [lab,a,b,th] of rows2){if(a==null||b==null)continue;const d=b-a;h+=`<tr><td>${lab}</td><td class="num">${a.toFixed(2)}</td><td class="num">${b.toFixed(2)}</td><td class="num">${d>0?"+":""}${d.toFixed(2)}</td><td>${Math.abs(d)>=th?`<b style="color:${(lab.startsWith("Supp")?d<0:lab.match(/Straight|Direct|Give/)?d>0:d<0)?"var(--ok)":"var(--neon)"}">reliable change</b>`:"<span class='tiny'>noise</span>"}</td></tr>`}
+    h+=`</table></div>`}
+
+  /* plan adherence */
+  const plan=sub.plan;if(plan&&plan.length){const ci=sub.checkins;let done=0,tot=0;for(const k of plan){for(const d in (ci[k]||{})){tot++;if(ci[k][d].done)done++}}
+    h+=`<div class="card"><h2>Change plan adherence</h2><p class="muted">${plan.length} modules active · ${done}/${tot} check-ins done (${tot?pct(done/tot):"–"}). ${tot<14?"Fewer than 14 check-ins; too early to retest.":"Enough check-ins to retest: save a snapshot and redo the questionnaire."}</p></div>`}
+
+  if(sub.notes.length){h+=`<div class="card"><h2>Notes (unscored)</h2>`;for(const n of sub.notes)h+=`<div class="note"><div class="h"><span class="pill">${n.dom}</span><span class="tiny">${esc(n.who||"")}</span></div>${esc(n.txt)}</div>`;h+=`</div>`}
+  h+=`<div class="card"><p class="tiny">Coverage: insecurity ${answered(QI)}/${QI.length}, deception ${answered(QD)}/${QD.length}, love ${answered(QL)}/${QL.length}, emotion ${answered(QE)}/${QE.length}, screens ${scrN()}/${SCR_TOTAL}, validity ${answered(QV)+answered(QX)}/${QV.length+QX.length}, self-view ${answered(QS)}/${QS.length}, disputes ${answered(QG)+answered(QGT)}/${QG.length+QGT.length}, orientation ${answered(QO)}/${QO.length}, message threads ${(sub.msg||[]).length}, told-by-others ${Object.values(r.told).filter(Boolean).length}, logged incidents ${sub.log.length}. Structured self/observer report, not a clinical instrument. Arithmetic is exact; item weights are author-assigned, not norm-referenced; screens carry their published cutoffs.</p></div>`;
+  m.innerHTML=h;
+}
+function saveSnapshot(){const r=R();r.snapshots.push({ts:Date.now(),a:JSON.parse(JSON.stringify(r.a)),told:JSON.parse(JSON.stringify(r.told)),turned:JSON.parse(JSON.stringify(r.turned))});save();alert(`Snapshot saved (${r.snapshots.length} total). Redo the questionnaire later and Results will show the change.`);render()}
+function copyReport(){const t=$("#main").innerText;navigator.clipboard?.writeText(t).then(()=>alert("Copied."),()=>alert("Copy failed; use Print."))}
+/* ---- views/compare.js ---- */
+/* Compare-raters tab. */
+
+
+
+
+
+/* ---------- COMPARE RATERS ---------- */
+function vCompare(m){
+  const sub=S(),raters=Object.entries(sub.raters).filter(([id,r])=>answered(QI,r)+answered(QD,r)+answered(QE,r)>=8);
+  if(raters.length<2){m.innerHTML=`<div class="card"><h2>Compare raters</h2><p class="muted">Needs at least two raters with answers for this subject (Self plus one observer). Add an observer with the header button; they answer the same items about ${esc(DB.cur.s)}.</p></div>`;return}
+  const sc=raters.map(([id,r])=>({id,r,I:scoreInsecurity(r),D:scoreDeception(r),E:scoreEmotion(r),L:scoreLove(r)}));
+  const self=sc.find(x=>x.r.kind==="self"),obs=sc.filter(x=>x.r.kind==="observer");
+  let h=`<div class="card"><h2>Compare raters: ${esc(DB.cur.s)}</h2><p class="muted">Vazire's model: the self knows internal states best; observers see evaluative behavior (honesty, defensiveness, how emotion comes out) more accurately. Where raters agree, treat it as confirmed. Where they disagree, that is the blind spot, shown item by item so it can be argued at the item level.</p>`;
+  // item-level agreement
+  if(self&&obs.length){
+    for(const o of obs){let agree=0,n=0;const dis=[];
+      const all=[...QI,...QD,...QE,...QL];
+      for(const q of all){for(let j=0;j<q.o.length;j++){const a=opt(self.r,q,j),b=opt(o.r,q,j);if(a==null||b==null)continue;n++;if(a===b)agree++;else dis.push({q,j,a,b})}}
+      h+=`<h3>Self vs ${esc(o.r.label)}</h3><p>Statement agreement <b>${n?pct(agree/n):"–"}</b> on ${n} shared statements. ${n&&agree/n<0.5?"Below half. Per Vazire (2010), observer accuracy exceeds self-accuracy for visible, evaluative behavior; weight the observer on deception and expression items.":n&&agree/n<0.7?"Moderate agreement.":"High agreement."}</p>`;
+      // trait-level table
+      h+=`<table><tr><th>trait</th><th>self</th><th>${esc(o.r.label)}</th><th>gap</th></tr>`;
+      const rows=[];for(const k in SCHEMA)rows.push([SCHEMA[k].n,self.I[k].post,o.I[k].post]);
+      rows.push(["Straight-answer rate",self.D.total?self.D.honest/self.D.total:null,o.D.total?o.D.honest/o.D.total:null]);
+      rows.push(["Direct emotional expression",self.E.directRate,o.E.directRate]);
+      let sum=0,cnt=0;
+      for(const [lab,a,b] of rows){if(a==null||b==null)continue;const g=b-a;sum+=Math.abs(g);cnt++;h+=`<tr><td>${lab}</td><td class="num">${a.toFixed(2)}</td><td class="num">${b.toFixed(2)}</td><td class="num" style="color:${Math.abs(g)>=0.25?"var(--warn)":"inherit"}">${g>0?"+":""}${g.toFixed(2)}</td></tr>`}
+      h+=`</table><p class="muted">Self-other discrepancy index (mean |gap|): <b>${cnt?(sum/cnt).toFixed(2):"–"}</b>. Above 0.25 is a large blind-spot load.</p>`;
+      if(dis.length){h+=`<p class="tiny">disagreements (${dis.length}):</p>`;for(const d of dis.slice(0,40))h+=`<div class="ev"><span class="src">${esc(d.q.t)}</span><br>${esc(d.q.o[d.j].t)}<br><b>self:</b> ${d.a?"true":"false"} · <b>${esc(o.r.label)}:</b> ${d.b?"true":"false"}</div>`}
+    }
+  } else h+=`<p class="muted">Only observers have answered; a Self rating is needed to compute blind spots. Observer-only profiles are still valid as evidence; see Results for each.</p>`;
+  h+=`</div>`;m.innerHTML=h;
+}
+/* ---- views/plan.js ---- */
+/* Change-plan tab and its check-ins. */
+
+
+
+
+
+
+
+
+/* ---------- CHANGE PLAN ---------- */
+function suggestModules(){
+  const r=S().raters.self,keys=[];
+  const rs=Object.values(S().raters).filter(x=>answered(QI,x)>=5);
+  if(!rs.length)return keys;
+  // aggregate across raters: mean posterior, summed method counts, summed modes
+  const agg={I:{},D:{},M:{},cos:[]};
+  for(const x of rs){const I=scoreInsecurity(x),D=scoreDeception(x),E=scoreEmotion(x),L=scoreLove(x);
+    for(const k in I)agg.I[k]=(agg.I[k]||0)+I[k].post/rs.length;for(const k in D.m)agg.D[k]=(agg.D[k]||0)+D.m[k].n;
+    for(const mo in E.modeTot)agg.M[mo]=(agg.M[mo]||0)+E.modeTot[mo];if(L.cos!=null)agg.cos.push(L.cos)}
+  const ti=Object.entries(agg.I).sort((a,b)=>b[1]-a[1]).filter(x=>x[1]>=0.5).slice(0,2).map(x=>x[0]);
+  const td=Object.entries(agg.D).sort((a,b)=>b[1]-a[1]).filter(x=>x[1]>=2).slice(0,2).map(x=>x[0]);
+  const tm=Object.entries(agg.M).filter(([mo])=>mo!=="direct"&&MODES_WITH_MODULE.includes(mo)).sort((a,b)=>b[1]-a[1]).filter(x=>x[1]>=3).slice(0,1).map(x=>"m_"+x[0]);
+  keys.push(...ti,...td,...tm);
+  if(agg.cos.length&&agg.cos.reduce((a,b)=>a+b,0)/agg.cos.length<0.5)keys.push("love");
+  if(rs.some(x=>["recurrent","pervasive"].includes(scoreGL(x).actorBand)))keys.unshift("GLA");
+  return keys.slice(0,5);
+}
+const MODES_WITH_MODULE=["anger","suppress","withdraw","humor","somatic","displace"];
+function vPlan(m){
+  const sub=S();const sug=suggestModules();
+  if(!sub.plan)sub.plan=[];
+  const today=new Date().toISOString().slice(0,10);
+  let h=`<div class="card"><h2>Change plan</h2><p class="muted">One two-week behavioral experiment per finding, drawn from schema therapy, CBT, and DBT. Each has a daily check-in. The plan is assigned from results (aggregated across raters), and you can add or remove modules. Adherence and retest readiness show in Results. Change is measured, not assumed: after 14+ check-ins, save a snapshot and redo the questionnaire.</p>
+  <div class="row"><button class="primary" onclick="S().plan=${JSON.stringify(sug).replace(/"/g,"&quot;")};save();render()">Assign from results (${sug.length})</button>
+  <select id="addMod"><option value="">add a module…</option>${Object.entries(MODULES).map(([k,v])=>`<option value="${k}">${esc(v.n)} — ${k.startsWith("m_")?MODE[k.slice(2)]:SCHEMA[k]?SCHEMA[k].n:DEC[k]?DEC[k].n:k==="GLA"?"disputes":"love language"}</option>`).join("")}</select>
+  <button onclick="const k=document.getElementById('addMod').value;if(k&&!S().plan.includes(k)){S().plan.push(k);save();render()}">Add</button></div></div>`;
+  for(const k of sub.plan){const M=MODULES[k];if(!M)continue;const ci=sub.checkins[k]=sub.checkins[k]||{};
+    const days=[];for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d.toISOString().slice(0,10))}
+    const done=Object.values(ci).filter(x=>x.done).length,tot=Object.keys(ci).length;
+    h+=`<div class="mod"><div class="row"><h4>${esc(M.n)}</h4><span class="pill">${k.startsWith("m_")?MODE[k.slice(2)]:SCHEMA[k]?SCHEMA[k].n:DEC[k]?DEC[k].n:k==="GLA"?"disputes":"love language"}</span><span class="spacer"></span><span class="tiny">${done}/${tot} done</span><button class="danger sm" onclick="S().plan=S().plan.filter(x=>x!=='${k}');save();render()">remove</button></div>
+    <p class="muted" style="margin:4px 0"><b>Why:</b> ${esc(M.why)}</p><p style="margin:4px 0"><b>Do:</b> ${esc(M.do)}</p>
+    <p style="margin:4px 0"><b>Today (${today}):</b> ${esc(M.check)} <button class="sm ${ci[today]?.done?"primary":""}" onclick="ck('${k}','${today}',true)">yes</button> <button class="sm ${ci[today]&&!ci[today].done?"danger":""}" onclick="ck('${k}','${today}',false)">no</button>
+    <input type="text" placeholder="what happened (optional)" value="${esc(ci[today]?.note||"")}" onchange="ckNote('${k}','${today}',this.value)" style="width:60%"></p>
+    <div class="ci">${days.map(d=>`<span class="${ci[d]?(ci[d].done?"y":"n"):""}" title="${d}${ci[d]?.note?": "+esc(ci[d].note):""}">${d.slice(8)}</span>`).join("")}</div></div>`}
+  if(!sub.plan.length)h+=`<div class="card"><p class="muted">No modules assigned. Click "Assign from results" once there are answers, or add modules by hand.</p></div>`;
+  m.innerHTML=h;
+}
+function ck(k,d,v){const ci=S().checkins[k]=S().checkins[k]||{};ci[d]=Object.assign(ci[d]||{},{done:v});save();render()}
+function ckNote(k,d,v){const ci=S().checkins[k]=S().checkins[k]||{};ci[d]=Object.assign(ci[d]||{done:false},{note:v});save()}
+/* ---- views/method.js ---- */
+/* Method tab: how every number on the report is produced. */
+
+
+/* ---------- METHOD ---------- */
+function vMethod(m){
+  m.innerHTML=`<div class="card"><h2>Method</h2>
+  <h3>What this is and isn't</h3>
+  <p>A structured behavioral self- and observer-report with transparent arithmetic. It is not a diagnostic instrument: diagnosis needs a clinician, an interview, and norm-referenced tests. The two screens included (PHQ-9, GAD-7) are the public-domain ones clinicians actually use for first-pass screening, with their published cutoffs; the rest of the item bank is author-written from the models below and its weights are not normed. Ranks, gaps, and change within one subject are the meaningful outputs; absolute numbers across subjects are not comparable.</p>
+  <h3>Insecurities: Young's Early Maladaptive Schemas</h3>
+  <p>Schema therapy (Young, Klosko &amp; Weishaar, 2003) describes 18 stable belief patterns; ten are used. Items are behavioral rather than the YSQ's direct self-statements because a person without insight won't endorse "I am fundamentally flawed" but will report deleting a post that got no response.</p>
+  <pre class="math">posterior = σ( logit(0.25) + Σ LLR )
+LLR: +1.1 primary option (≈ ×3 likelihood), +0.4…0.9 secondary, −0.35 when an item tested the schema and another option was chosen
+told-by-others: +0.6…0.9, marked external</pre>
+  <h3>Deception: Interpersonal Deception Theory, defenses, contexts</h3>
+  <p>Buller &amp; Burgoon (1996): falsification, concealment, equivocation. DePaulo et al. (1996): everyday lying is frequent and varies by relationship. Vaillant and the DSQ (Andrews et al., 1993): minimization, rationalization, projection, denial, humor. Paulhus (1984): self-deception vs impression management. <b>Intent is not measured.</b> An observer scores a non-straight option only after recording that it turned out otherwise; unverified items are counted and excluded.</p>
+  <pre class="math">count(method) = Σ 1.0 primary + 0.5 secondary, scored items only
+straight rate(context) = straight / scored items in context
+context SD = √ mean (rate_c − mean)²      ; ≥0.30 = markedly different by setting
+entropy H = −Σ p_k log₂ p_k                ; max 3.32 bits
+self-deception = 1 − straight rate in "yourself" items</pre>
+  <h3>Love language: Chapman, ipsative</h3>
+  <p>Five languages as a forced-choice vocabulary (weak as five independent factors, useful as a language). Give side added because the common failure is giving in one's own language.</p>
+  <pre class="math">cosine(give, receive) = g·r / (‖g‖‖r‖)   ; Herfindahl = Σ (r_k/n)²</pre>
+  <h3>Emotion: Gross, Greenberg, Lieberman</h3>
+  <p>Gross (1998): expressive suppression fails to reduce the felt emotion and leaks. Greenberg: secondary emotions mask primary ones (anger over fear). Lieberman et al. (2007): affect labeling reduces amygdala response, which is why the modules ask for the word out loud.</p>
+  <pre class="math">direct rate(e) = direct / items for e ; genuine ≥ 0.50 ; masked < 0.34 (n ≥ 2)
+suppression index = (suppress + withdraw) / all emotion items</pre>
+  <h3>Orientation: paired statements</h3>
+  <p>Domains follow the Klein Sexual Orientation Grid (Klein, Sepekoff &amp; Wolf 1985): behavior, attraction, emotional preference, ideal, self-label, plus concealment and sought-vs-offered. Each statement is asked for the same sex and for the other sex. A domain's position is the ratio of true counts placed on Kinsey's 0–6 scale. The report states positions and gaps; it does not assign an orientation, which the literature treats as self-defined.</p>
+  <pre class="math">position = 6 × same_true ÷ (same_true + other_true)
+gap flagged when |a − b| ≥ 1.5 (a quarter of the scale)</pre>
+  <h3>Format</h3>
+  <p>Every item is a true/false statement. A situation is shown once and each thing a person might do in it is a separate statement, so several can be true. Scoring counts true statements; a statement left blank is not scored. True/false formats are vulnerable to acquiescence (marking true regardless of content), so the validity section measures the share of statements marked true across the whole instrument.</p>
+  <h3>Validity</h3>
+  <p>Lie scale modeled on MMPI-L and Marlowe-Crowne: virtues almost nobody can truthfully claim. Inconsistency modeled on MMPI VRIN: reworded items whose categories should match. Stamp rules:</p>
+  <pre class="math">invalid      : lie ≥ 6/8  or  inconsistency ≥ 3/6
+questionable : lie ≥ 4/8  or  inconsistency ≥ 2/6  or  (straight ≥ 85% on ≥12 items and lie ≥ 3)
+questionable : true on ≥ 75% or ≤ 6% of statements (n ≥ 60), acquiescence / nay-saying
+valid        : otherwise</pre>
+  <h3>Observers and blind spots</h3>
+  <p>Vazire's SOKA model (2010): self-accuracy is highest for internal, low-evaluative traits; other-accuracy is highest for visible, evaluative traits. Deception and emotional expression are visible and evaluative, so observer reports are weighted there. Item agreement is computed on category (method, mode, language), not option index. Self-other discrepancy index = mean absolute gap across schema posteriors, straight rate, and direct-expression rate.</p>
+  <h3>Incident log and contradictions</h3>
+  <p>Ecological momentary assessment logic: events recorded near the moment beat retrospective generalization. The log is coded with the same categories. A contradiction is flagged when the questionnaire's straight rate in a context exceeds the log's by 0.40 or more, when a method appears twice in the log but never in the questionnaire, when a schema is tagged twice in the log but scores under 30%, or when an emotion's direct rate differs by 0.40 or more.</p>
+  <h3>Change</h3>
+  <p>Snapshots freeze answers. Reliable change: |Δ posterior| ≥ 0.20, or |Δ rate| ≥ 0.25 with n ≥ 4, which approximates a reliable-change criterion for an instrument of this length. Modules are behavioral experiments in the schema-therapy sense: the schema makes a prediction, the experiment tests it, the log records the outcome. Adherence is counted; 14 check-ins is the minimum before a retest means anything.</p>
+  <h3>Screens</h3>
+  <p>PHQ-9 (Kroenke, Spitzer &amp; Williams, 2001) bands: 0–4 minimal, 5–9 mild, 10–14 moderate, 15–19 moderately severe, 20–27 severe; item 9 is a self-harm flag on its own. GAD-7 (Spitzer et al., 2006) bands: 0–4, 5–9, 10–14, 15–21. Attachment items are adapted to the anxiety/avoidance model behind the ECR (Brennan, Clark &amp; Shaver, 1998) and are not the ECR; the 4.0 split is a convention, not a norm.</p>
+  </div>`;
+}
+/* ---- io/transfer.js ---- */
+/* Export and import one subject as JSON. */
+
+
+
+function exportJSON(){const blob=new Blob([JSON.stringify({subject:DB.cur.s,data:S()},null,1)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`undertow-${DB.cur.s}-${new Date().toISOString().slice(0,10)}.json`;a.click()}
+function importJSON(){const i=document.createElement("input");i.type="file";i.accept=".json";i.onchange=()=>{const f=i.files[0];const rd=new FileReader();rd.onload=()=>{try{const j=JSON.parse(rd.result);const name=j.subject||f.name;if(DB.subjects[name]&&!confirm(`Replace subject "${name}"?`))return;DB.subjects[name]=j.data;DB.cur={s:name,r:"self"};save();render()}catch(e){alert("Not a valid export.")}};rd.readAsText(f)};i.click()}
+/* ---- main.js ---- */
+/* Entry point: draw the current tab, keep the URL hash in step, and expose the
+   handful of functions that the generated HTML calls from inline onclick
+   attributes (those run in global scope, so they cannot see module bindings). */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* the real redraw; named renderApp so the views can call render() (ui/render.js)
+   without importing this file back */
+function renderApp(){ensure();renderHeader();renderNav();const m=$("#main");
+  ({start:vStart,ins:()=>vQuestions("ins",QI),dec:()=>vQuestions("dec",QD),love:()=>vQuestions("love",QL),emo:()=>vQuestions("emo",QE),
+    scr:vScreens,orient:vOrient,disp:vDisputes,msgs:vMsgs,val:vValidity,self:vSelf,told:vTold,log:vLog,notes:vNotes,results:vResults,compare:vCompare,plan:vPlan,method:vMethod})[tab]?.(m);
+  window.scrollTo(0,0);
+}
+setDispatch(renderApp);
+
+/* inline-handler surface */
+Object.assign(window,{$,esc,DB,S,R,save,render,go,nextTab,toggleAdv,
+  setTF,setA,setT,toggleSelf,setMsgCtx,loadMsgFiles,loadPaste,runMsgAnalysis,msgToLog,
+  addLog,delLog,addNote,saveSnapshot,copyReport,ck,ckNote,exportJSON,importJSON});
+
+window.addEventListener("hashchange",()=>{const t=location.hash.slice(1);if(TABS.some(x=>x.id===t)&&t!==tab){setTab(t);render()}});
+render();
+</script>
+</body>
+</html>
